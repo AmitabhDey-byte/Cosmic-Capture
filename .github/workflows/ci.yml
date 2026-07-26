@@ -1,0 +1,43 @@
+name: Verify Stellar Arena
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  fastapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r backend/requirements.txt
+      - run: python -m compileall -q backend
+      - run: python -c "from backend.app.main import app; assert app.title == 'Stellar Arena API'"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/stellar_arena
+
+  soroban-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - run: cargo fmt --manifest-path contracts/stellar-arena/Cargo.toml -- --check
+      - run: cargo test --manifest-path contracts/stellar-arena/Cargo.toml
