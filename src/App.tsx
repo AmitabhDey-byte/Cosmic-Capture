@@ -171,7 +171,7 @@ function App() {
     if (!wallet) return setWalletModal(true)
     void persistPlayer({ walletAddress: wallet.address, walletProvider: wallet.provider, displayName, avatarKey: 'kira-pixel' })
       .then(() => showNotice('Pilot identity saved to the arena registry.'))
-      .catch(() => showNotice('Could not reach the registry. Your name stays local until the API is online.'))
+      .catch((error) => showNotice(error instanceof Error ? `Registry update failed: ${error.message}` : 'Registry update failed. Please retry.'))
   }
 
   const completePilotProfile = async () => {
@@ -208,7 +208,7 @@ function App() {
           const prize = await claimTestnetWinXlm({ walletAddress: wallet.address, walletProvider: wallet.provider, displayName, age: Number(age), avatarKey: 'kira-guide-v2', matchRef })
           showNotice(`${prize.amount} ${prize.assetCode} Testnet prize sent — ${shortKey(prize.transactionHash)}.`)
         })
-        .catch(() => showNotice(`Run complete: ${run.cores} cores secured locally. API sync will retry when online.`))
+        .catch((error) => showNotice(error instanceof Error ? `Run saved locally: ${error.message}` : `Run complete: ${run.cores} cores secured locally.`))
     } else {
       showNotice(`Run complete: ${run.cores} cores secured. Connect a wallet to queue Testnet rewards.`)
     }
