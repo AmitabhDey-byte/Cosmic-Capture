@@ -3,11 +3,12 @@ from contextlib import asynccontextmanager
 from decimal import Decimal, InvalidOperation
 import json
 import logging
+from secrets import compare_digest
 from uuid import uuid4
 
 import httpx
 from asyncpg import Pool
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -40,7 +41,7 @@ app.add_middleware(
     allow_origins=[origin.strip() for origin in settings.client_origin.split(",") if origin.strip()],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -94,6 +95,16 @@ async def register_player(pool: Pool, player: PlayerInput) -> dict[str, object]:
 
 def pool_for(request: Request) -> Pool:
     return request.app.state.db
+
+
+def require_admin(authorization: str | None = Header(default=None)) -> None:
+    """Guard dashboard data with a server-only bearer token."""
+    expected = settings.admin_access_token
+    if not expected:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="The admin dashboard is not configured.")
+    candidate = authorization.removeprefix("Bearer ") if authorization else ""
+    if not compare_digest(candidate, expected):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin access denied.")
 
 
 async def verify_powerup_payment(payload: PowerupPurchaseInput) -> Decimal:
@@ -155,6 +166,48 @@ async def leaderboard(request: Request):
         """
     )
     return {"leaderboard": [dict(row) for row in rows]}
+
+
+@app.get("/api/admin/overview")
+async def admin_overview(request: Request, authorization: str | None = Header(default=None)):
+    # Calling the shared helper explicitly keeps this endpoint easy to audit in Vercel logs.
+    require_admin(authorization)
+    pool = pool_for(request)
+    totals = await pool.fetchrow(
+        """SELECT
+              (SELECT COUNT(*) FROM players)::int AS players,
+              (SELECT COUNT(*) FROM matches)::int AS matches,
+              (SELECT COUNT(*) FROM powerup_purchases)::int AS powerup_purchases,
+              (SELECT COUNT(*) FROM reward_claims)::int AS win_payouts,
+              (SELECT COALESCE(SUM(amount), 0)::text FROM reward_claims WHERE asset_code = 'XLM') AS xlm_paid,
+              (SELECT COUNT(*) FROM players WHERE last_seen_at >= NOW() - INTERVAL '24 hours')::int AS active_24h"""
+    )
+    recent_players = await pool.fetch(
+        "SELECT wallet_address, display_name, age, wallet_provider, created_at, last_seen_at FROM players ORDER BY last_seen_at DESC LIMIT 50"
+    )
+    recent_matches = await pool.fetch(
+        """SELECT m.match_ref, m.mode, m.cores, m.placement, m.duration_seconds, m.created_at, p.display_name, m.wallet_address
+           FROM matches m JOIN players p ON p.wallet_address = m.wallet_address ORDER BY m.created_at DESC LIMIT 50"""
+    )
+    purchases = await pool.fetch(
+        """SELECT pp.powerup_id, pp.xlm_amount, pp.tx_hash, pp.purchased_at, p.display_name, pp.wallet_address
+           FROM powerup_purchases pp JOIN players p ON p.wallet_address = pp.wallet_address ORDER BY pp.purchased_at DESC LIMIT 50"""
+    )
+    transactions = await pool.fetch(
+        """SELECT st.tx_hash, st.action, st.network, st.status, st.metadata, st.created_at, st.confirmed_at, p.display_name, st.wallet_address
+           FROM stellar_transactions st JOIN players p ON p.wallet_address = st.wallet_address ORDER BY st.created_at DESC LIMIT 100"""
+    )
+    feedback = await pool.fetch(
+        "SELECT score, message, created_at, wallet_address FROM feedback ORDER BY created_at DESC LIMIT 50"
+    )
+    return {
+        "totals": dict(totals),
+        "recentPlayers": [dict(row) for row in recent_players],
+        "recentMatches": [dict(row) for row in recent_matches],
+        "purchases": [dict(row) for row in purchases],
+        "transactions": [dict(row) for row in transactions],
+        "feedback": [dict(row) for row in feedback],
+    }
 
 
 @app.post("/api/players/upsert")

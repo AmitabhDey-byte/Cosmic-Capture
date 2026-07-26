@@ -6,7 +6,7 @@ import {
   Swords, Target, Trophy, Users, Wallet, X, Zap,
 } from 'lucide-react'
 import { connectAlbedo, connectFreighter, type WalletSession } from './lib/wallets'
-import { claimTestnetWinXlm, fetchDuoQueue, fetchOwnedPowerups, fetchPlayerProfile, gameApiBase, joinDuoQueue, leaveDuoQueue, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase, type DuoQueueStatus } from './lib/api'
+import { claimTestnetWinXlm, fetchAdminDashboard, fetchDuoQueue, fetchOwnedPowerups, fetchPlayerProfile, gameApiBase, joinDuoQueue, leaveDuoQueue, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase, type AdminDashboard, type DuoQueueStatus } from './lib/api'
 import { track } from './lib/observability'
 import type { ArenaRun } from './game/StellarArena'
 import { configuredAstraAsset, configuredPowerupTreasury, createAstraTrustline, purchasePowerupWithXlm } from './lib/testnetCurrency'
@@ -16,7 +16,7 @@ import './App.css'
 const StellarArena = lazy(() => import('./game/StellarArena').then(({ StellarArena: Arena }) => ({ default: Arena })))
 const ArcadeLounge = lazy(() => import('./game/ArcadeLounge').then(({ ArcadeLounge: Lounge }) => ({ default: Lounge })))
 
-type Page = 'home' | 'play' | 'missions' | 'hangar' | 'store' | 'crew' | 'arcade' | 'leaderboard' | 'profile' | 'lore'
+type Page = 'home' | 'play' | 'missions' | 'hangar' | 'store' | 'crew' | 'arcade' | 'leaderboard' | 'profile' | 'lore' | 'admin'
 type Mode = 'Solo' | 'Duo' | 'Tournament'
 type TacticalDirective = { text: string; coreGoal: number; bonusShards: number; poweredByGemini: boolean }
 type ArenaPosition = { x: number; y: number }
@@ -32,6 +32,7 @@ const nav: { id: Page; label: string; icon: typeof Home }[] = [
   { id: 'lore', label: 'Lore', icon: PanelTop },
   { id: 'leaderboard', label: 'Rankings', icon: Trophy },
   { id: 'profile', label: 'Profile', icon: Users },
+  { id: 'admin', label: 'Ops', icon: Shield },
 ]
 
 const modes: { name: Mode; players: string; note: string; color: string }[] = [
@@ -309,6 +310,7 @@ function App() {
         </nav>
         <div className="top-actions">
           <button className="pill gem-pill" onClick={() => setGeminiOpen(true)}><Sparkles size={15} /> Kira AI</button>
+          <button className="pill ops-pill" onClick={() => go('admin')}><Shield size={14} /> Ops</button>
           <button className="wallet-chip" onClick={() => setWalletModal(true)}><Wallet size={16} /> {wallet ? shortKey(wallet.address) : 'Connect'}</button>
           <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu">{menuOpen ? <X /> : <Menu />}</button>
         </div>
@@ -328,6 +330,7 @@ function App() {
         {page === 'arcade' && <ArcadePage />}
         {page === 'leaderboard' && <LeaderboardPage />}
         {page === 'profile' && <ProfilePage wallet={wallet} setWalletModal={setWalletModal} showNotice={showNotice} displayName={displayName} setDisplayName={setDisplayName} savePilotIdentity={savePilotIdentity} />}
+        {page === 'admin' && <AdminPage />}
         {page === 'lore' && <LorePage go={go} />}
       </main>
       {openChapter !== null && <ChapterReaderModal chapter={chapterStories[openChapter]} close={() => setOpenChapter(null)} />}
@@ -517,6 +520,28 @@ function GameSurfaceLoading({ label }: { label: string }) { return <div classNam
 
 function LeaderboardPage() { return <section className="leaderboard-page section-wrap"><div className="page-intro"><span className="eyebrow"><span /> SEASON 01 / NEON CUP</span><h1>The sky remembers<br /><i>the brave.</i></h1><p>Ranked by verified match results. Last refresh: just now.</p></div><div className="rank-layout"><div className="rank-list comic-panel"><div className="rank-header"><span>RANK / PILOT</span><span>CORE SCORE</span><span>FORM</span></div>{rankings.map((r, i) => <article className={i === 3 ? 'your-rank' : ''} key={r[0]}><b className="rank-num">0{i + 1}</b><span className={`rank-avatar av-${i}`}>{r[3]}</span><div><h3>{r[0]}</h3><small>{r[2]}</small></div><strong>{r[1]}</strong><span className="rank-trend">↗ {12 - i * 2}</span></article>)}</div><aside className="season-card"><div><Crown /><span>SEASON ENDS IN</span><b>12D 04H</b></div><h3>Reach Astral rank</h3><p>Top 100 receive the limited Comet Crest badge on Stellar Testnet.</p><div className="rank-meter"><span style={{ width: '62%' }} /></div><small>11,340 / 18,000 RP</small><button>View season rules <ChevronRight size={15} /></button></aside></div></section> }
 
+function AdminPage() {
+  const [token, setToken] = useState('')
+  const [data, setData] = useState<AdminDashboard | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [tab, setTab] = useState<'players' | 'matches' | 'purchases' | 'transactions' | 'feedback'>('players')
+  useEffect(() => { setToken(window.sessionStorage.getItem('stellar-arena-admin-token') || '') }, [])
+  const unlock = async () => {
+    setLoading(true); setError('')
+    try { const dashboard = await fetchAdminDashboard(token); setData(dashboard); window.sessionStorage.setItem('stellar-arena-admin-token', token) }
+    catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not unlock operations.') }
+    finally { setLoading(false) }
+  }
+  const lock = () => { window.sessionStorage.removeItem('stellar-arena-admin-token'); setData(null); setToken(''); setError('') }
+  if (!data) return <section className="admin-page section-wrap"><div className="admin-lock comic-panel"><Shield size={42} /><span className="eyebrow"><span /> COMMAND CONSOLE / RESTRICTED</span><h1>Operations<br /><i>only.</i></h1><p>Enter the server-only admin access token to review live Neon records. The token is kept only for this browser session.</p><input type="password" value={token} onChange={event => setToken(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void unlock() }} placeholder="ADMIN_ACCESS_TOKEN" autoComplete="current-password" /><button className="primary-btn" disabled={!token || loading} onClick={() => void unlock()}>{loading ? 'Checking clearance…' : 'Unlock operations'} <Shield size={16} /></button>{error && <small>{error}</small>}</div></section>
+  const metrics = [['PILOTS', data.totals.players], ['ACTIVE / 24H', data.totals.active_24h], ['MATCHES', data.totals.matches], ['MODULE SALES', data.totals.powerup_purchases], ['XLM PRIZES', data.totals.win_payouts], ['XLM PAID', data.totals.xlm_paid]]
+  const tabs: Array<[typeof tab, string]> = [['players', 'Pilots'], ['matches', 'Matches'], ['purchases', 'Purchases'], ['transactions', 'Transactions'], ['feedback', 'Feedback']]
+  return <section className="admin-page section-wrap"><header className="admin-head"><div><span className="eyebrow"><span /> NEON + STELLAR COMMAND CONSOLE</span><h1>Know every<br /><i>flight.</i></h1><p>Live operational records from the production Postgres database. Transaction hashes are retained for Testnet audit trails.</p></div><button onClick={lock}>Lock console <LockKeyhole size={15} /></button></header><div className="admin-metrics">{metrics.map(([label, value]) => <article className="comic-panel" key={String(label)}><span>{label}</span><b>{String(value)}</b></article>)}</div><section className="admin-console comic-panel"><div className="admin-tabs">{tabs.map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>)}<button onClick={() => void unlock()} disabled={loading}>Refresh</button></div>{tab === 'players' && <AdminTable headings={['Pilot', 'Wallet', 'Age', 'Wallet', 'Last seen']} rows={data.recentPlayers.map(row => [row.display_name, shortKey(row.wallet_address), row.age ?? '—', row.wallet_provider, formatAdminDate(row.last_seen_at)])} />}{tab === 'matches' && <AdminTable headings={['Pilot', 'Mode', 'Cores', 'Place', 'Recorded']} rows={data.recentMatches.map(row => [row.display_name, row.mode.toUpperCase(), row.cores, row.placement ? `#${row.placement}` : '—', formatAdminDate(row.created_at)])} />}{tab === 'purchases' && <AdminTable headings={['Pilot', 'Power-up', 'XLM', 'Tx hash', 'Purchased']} rows={data.purchases.map(row => [row.display_name, row.powerup_id, row.xlm_amount, shortKey(row.tx_hash), formatAdminDate(row.purchased_at)])} />}{tab === 'transactions' && <AdminTable headings={['Pilot', 'Action', 'State', 'Hash', 'Recorded']} rows={data.transactions.map(row => [row.display_name, row.action, row.status, shortKey(row.tx_hash), formatAdminDate(row.created_at)])} />}{tab === 'feedback' && <AdminTable headings={['Score', 'Message', 'Wallet', 'Received']} rows={data.feedback.map(row => [row.score ? `${row.score}/5` : '—', row.message, row.wallet_address ? shortKey(row.wallet_address) : 'Guest', formatAdminDate(row.created_at)])} />}</section></section>
+}
+
+function AdminTable({ headings, rows }: { headings: string[]; rows: Array<Array<string | number>> }) { return <div className="admin-table-wrap"><table><thead><tr>{headings.map(heading => <th key={heading}>{heading}</th>)}</tr></thead><tbody>{rows.length ? rows.map((row, index) => <tr key={`${row.join('-')}-${index}`}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>) : <tr><td colSpan={headings.length}>Nothing recorded yet.</td></tr>}</tbody></table></div> }
+
 function ProfilePage({ wallet, setWalletModal, showNotice, displayName, setDisplayName, savePilotIdentity }: { wallet: WalletSession | null; setWalletModal: (b: boolean) => void; showNotice: (s: string) => void; displayName: string; setDisplayName: (value: string) => void; savePilotIdentity: () => void }) { return <section className="profile-page section-wrap"><div className="profile-banner scene-city"><div><span>THE FLIGHT LOG OF</span><h1>{displayName.split(' ')[0]?.toUpperCase() || 'PILOT'}</h1><p>“I’m not lost. I’m exploring in a really committed way.”</p></div></div><div className="profile-grid"><section className="pilot-card comic-panel"><div className="pilot-avatar avatar-art" aria-label="Pilot portrait" /><div><span>RANK 04 · COMET</span><h2>{displayName.toUpperCase()}</h2><p>{wallet ? `${wallet.provider} / ${shortKey(wallet.address)}` : 'Guest pilot — secure your arena identity.'}</p><label className="pilot-name-field">CALLSIGN<input maxLength={32} value={displayName} onChange={event => setDisplayName(event.target.value)} placeholder="Your callsign" /></label></div><button onClick={() => wallet ? savePilotIdentity() : setWalletModal(true)}>{wallet ? 'Save pilot' : 'Connect wallet'}</button></section><section className="badge-case"><span><Medal /> BADGE CASE / SHOWCASE</span><div><Badge icon="✦" name="First Light" /><Badge icon="☄" name="Core Keeper" /><Badge icon="⚡" name="Swift Shift" /><Badge icon="♜" name="Kitsune Signal" /></div></section><section className="activity-card comic-panel"><span>RECENTLY RECORDED</span><article><i className="win">W</i><div><b>Solo · Shibuya Drift</b><small>Placed #1 / 8 · 9 cores captured</small></div><em>+240 RP</em></article><article><i className="win">W</i><div><b>Duo · Kyoto Orbit</b><small>Placed #2 / 4 · Kira Byte joined</small></div><em>+180 RP</em></article><button onClick={() => showNotice('Full match history will load from your game backend.')}>Open match history <ChevronRight size={15} /></button></section></div></section> }
 
 function ArenaAccessGate({ walletConnected, openWallet, openProfile }: { walletConnected: boolean; openWallet: () => void; openProfile: () => void }) {
@@ -561,5 +586,10 @@ function PixelAvatar({ mark = 'K' }: { mark?: string }) {
 function WalletModal({ close, connect, connecting }: { close: () => void; connect: (k: 'freighter' | 'albedo') => void; connecting: 'freighter' | 'albedo' | null }) { return <div className="modal-backdrop" role="dialog" aria-modal="true"><div className="wallet-modal comic-panel"><button className="modal-close" onClick={close}><X /></button><div className="wallet-spark"><Wallet /><i /></div><span className="eyebrow"><span /> PILOT IDENTITY</span><h2>Bring your own<br /><i>starship key.</i></h2><p>Connect a Stellar wallet to save your identity, claim Testnet badges, and enter seasonal events.</p><button className="wallet-option" onClick={() => connect('freighter')} disabled={!!connecting}><span className="freighter-logo">F</span><div><b>Freighter</b><small>Browser extension wallet</small></div><ChevronRight /></button><button className="wallet-option" onClick={() => connect('albedo')} disabled={!!connecting}><span className="albedo-logo">A</span><div><b>Albedo</b><small>Secure pop-up signer</small></div><ChevronRight /></button><small className="wallet-foot">{connecting ? `Waiting for ${connecting}…` : 'You approve every signature. We never see your secret key.'}</small></div></div> }
 
 function shortKey(value: string) { return `${value.slice(0, 5)}…${value.slice(-4)}` }
+
+function formatAdminDate(value: string) {
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+}
 
 export default App

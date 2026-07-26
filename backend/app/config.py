@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     stellar_powerup_treasury_address: str | None = None
     soroban_rpc_url: str = "https://soroban-testnet.stellar.org"
     result_verifier_secret: str | None = None
+    admin_access_token: str | None = None
 
 
 @lru_cache
