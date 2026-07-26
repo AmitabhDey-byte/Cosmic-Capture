@@ -148,9 +148,9 @@ To deploy, compile with the Soroban-compatible `wasm32v1-none` target, use the S
 
 ## CI/CD
 
-The CI workflow at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every PR and `main` push. It installs with `npm ci`, lints and builds the Vite client, compiles the FastAPI package using the same root requirements Vercel uses, and formats/tests/builds the Soroban WASM target.
+The CI workflow at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every PR and `master` push. It installs with `npm ci`, lints and builds the Vite client, compiles the FastAPI package using the same root requirements Vercel uses, and formats/tests/builds the Soroban WASM target.
 
-The Vercel workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs only after a successful `main` CI run (or through manual dispatch), builds a production artifact with Vercel, deploys that exact prebuilt artifact, and verifies `GET /api/health`. It requires these GitHub repository secrets:
+The Vercel workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs only after a successful `master` CI run (or through manual dispatch), builds a production artifact with Vercel, deploys that exact prebuilt artifact, and verifies `GET /api/health`. It requires these GitHub repository secrets:
 
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
