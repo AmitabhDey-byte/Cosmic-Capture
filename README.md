@@ -94,7 +94,7 @@ This repository now deploys the Vite client and FastAPI API together. `api/index
 1. Push the repository to GitHub and import it into Vercel.
 2. In **Project Settings → Environment Variables**, add the server-only values from `.env.example`: at minimum `DATABASE_URL`, `DATABASE_SSL=true`, `CLIENT_ORIGIN=https://your-domain.vercel.app`, and the Stellar/Gemini variables you plan to enable.
 3. Add the public `VITE_` values there too. Leave `VITE_GAME_API_URL` empty so browser requests use the same Vercel domain. `VITE_POWERUP_TREASURY_ADDRESS` and `STELLAR_POWERUP_TREASURY_ADDRESS` must contain the same funded Stellar Testnet public address. Add `STELLAR_WIN_REWARD_TREASURY_SECRET` only to Vercel's server environment, fund its public account with Testnet XLM, and set `STELLAR_WIN_REWARD_AMOUNT=1.0000000` (or your chosen Testnet amount).
-4. Run `npm run db:migrate` once against the production Neon database before enabling checkout, then deploy. The migration now includes player age and the Duo lobby tables. Vercel detects the Vite build and root `requirements.txt` automatically. The Vercel routing configuration preserves `/api/*` functions before the React SPA fallback, which fixes checkout's invalid-API response.
+4. Run `npm run db:migrate` once against the production Neon database before enabling checkout, then deploy. The migration now includes player age and the Duo lobby tables. Vercel detects the Vite build and root `requirements.txt` automatically. The Vercel routing configuration explicitly sends `/api/*` to `api/index.py` before the React SPA fallback, so POSTs such as player registration and power-up verification reach FastAPI instead of returning `405` from the static site.
 
 After deployment, set a long random `ADMIN_ACCESS_TOKEN` in Vercel. Open **Ops** in the app header and enter that value to see registered pilots, login activity, matches, purchases, Stellar transaction hashes, XLM prize totals, and feedback. The token stays only in that browser tab session.
 
@@ -128,7 +128,7 @@ cargo fmt --manifest-path contracts/stellar-arena/Cargo.toml -- --check
 cargo test --manifest-path contracts/stellar-arena/Cargo.toml
 ```
 
-To deploy, compile for `wasm32-unknown-unknown`, use the Stellar CLI against Testnet, then place the resulting address in `VITE_SOROBAN_CONTRACT_ID`. A funded Testnet account and the project-specific verifier address are required, so deployment is deliberately not hard-coded here.
+To deploy, compile with the Soroban-compatible `wasm32v1-none` target, use the Stellar CLI against Testnet, then place the resulting address in `VITE_SOROBAN_CONTRACT_ID`. A funded Testnet account and the project-specific verifier address are required, so deployment is deliberately not hard-coded here.
 
 ## Production checklist
 
@@ -148,16 +148,16 @@ To deploy, compile for `wasm32-unknown-unknown`, use the Stellar CLI against Tes
 
 ## CI/CD
 
-The CI workflow at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) builds/lints the frontend and checks/tests the Soroban contract for every PR and `main` push.
+The CI workflow at [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every PR and `main` push. It installs with `npm ci`, lints and builds the Vite client, compiles the FastAPI package using the same root requirements Vercel uses, and formats/tests/builds the Soroban WASM target.
 
-The Vercel workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) only deploys after these repository secrets exist:
+The Vercel workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs only after a successful `main` CI run (or through manual dispatch), builds a production artifact with Vercel, deploys that exact prebuilt artifact, and verifies `GET /api/health`. It requires these GitHub repository secrets:
 
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
 - `VITE_SENTRY_DSN` and `VITE_POSTHOG_KEY` (optional)
 
-Configure the application runtime secrets in Vercel itself; the API and browser use the same deployment origin by default.
+Configure application runtime secrets (`DATABASE_URL`, Gemini, Stellar, and `ADMIN_ACCESS_TOKEN`) in **Vercel**, not GitHub Actions. The API and browser use the same deployment origin by default. Optional GitHub Environment protection rules on `production` can require your approval before the deployment job starts.
 
 ## Project map
 

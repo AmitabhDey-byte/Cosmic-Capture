@@ -4,6 +4,14 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   frontend:
@@ -26,11 +34,12 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip
-      - run: python -m pip install -r backend/requirements.txt
+      - run: python -m pip install -r requirements.txt
       - run: python -m compileall -q backend
-      - run: python -c "from backend.app.main import app; assert app.title == 'Stellar Arena API'"
+      - run: python -c "from backend.app.main import app; assert app.title == 'Stellar Arena API'; assert any(getattr(route, 'path', None) == '/api/players/upsert' and 'POST' in getattr(route, 'methods', set()) for route in app.routes)"
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/stellar_arena
+          ADMIN_ACCESS_TOKEN: ci-smoke-token
 
   soroban-contract:
     runs-on: ubuntu-latest
@@ -38,6 +47,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown
+          # soroban-sdk 27 requires Rust 1.84+ and the constrained WASM target.
+          targets: wasm32v1-none
       - run: cargo fmt --manifest-path contracts/stellar-arena/Cargo.toml -- --check
       - run: cargo test --manifest-path contracts/stellar-arena/Cargo.toml
+      - run: cargo build --manifest-path contracts/stellar-arena/Cargo.toml --target wasm32v1-none --release
