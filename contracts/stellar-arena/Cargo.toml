@@ -1,0 +1,15 @@
+[package]
+name = "stellar-arena"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = "27.0.1"
+
+[dev-dependencies]
+soroban-sdk = { version = "27.0.1", features = ["testutils"] }
