@@ -1,7 +1,16 @@
 """Server-side Testnet utility-asset rewards. The issuer secret never reaches the browser."""
 from stellar_sdk import Asset, Keypair, Network, Server, TransactionBuilder
+from stellar_sdk.exceptions import BadRequestError, Ed25519SecretSeedInvalidError, NotFoundError
 
 from .config import Settings
+
+
+class TestnetPayoutConfigurationError(RuntimeError):
+    """A safe, actionable payout setup failure suitable for the browser."""
+
+
+class TestnetPayoutRejectedError(RuntimeError):
+    """A Stellar network rejection that does not reveal a server secret."""
 
 
 def pay_astra(settings: Settings, destination: str, amount: str) -> str:
@@ -27,9 +36,19 @@ def pay_testnet_xlm(settings: Settings, destination: str, amount: str) -> str:
     """Send a native-XLM Testnet prize from the backend-controlled treasury."""
     if not settings.stellar_win_reward_treasury_secret:
         raise ValueError("STELLAR_WIN_REWARD_TREASURY_SECRET is not configured.")
-    treasury = Keypair.from_secret(settings.stellar_win_reward_treasury_secret)
+    try:
+        treasury = Keypair.from_secret(settings.stellar_win_reward_treasury_secret)
+    except Ed25519SecretSeedInvalidError as exc:
+        raise TestnetPayoutConfigurationError("Winner treasury must be a Stellar Testnet secret key beginning with S, not a public G address.") from exc
     server = Server(settings.stellar_horizon_url)
-    account = server.load_account(treasury.public_key)
+    try:
+        account = server.load_account(treasury.public_key)
+    except NotFoundError as exc:
+        raise TestnetPayoutConfigurationError("Winner treasury account is not funded on Stellar Testnet. Fund its public G address with Friendbot, then retry.") from exc
+    try:
+        server.load_account(destination)
+    except NotFoundError as exc:
+        raise TestnetPayoutConfigurationError("The connected player wallet is not funded on Stellar Testnet yet.") from exc
     transaction = (
         TransactionBuilder(account, network_passphrase=Network.TESTNET, base_fee=100)
         .append_payment_op(destination=destination, asset=Asset.native(), amount=amount)
@@ -38,5 +57,8 @@ def pay_testnet_xlm(settings: Settings, destination: str, amount: str) -> str:
         .build()
     )
     transaction.sign(treasury)
-    result = server.submit_transaction(transaction)
+    try:
+        result = server.submit_transaction(transaction)
+    except BadRequestError as exc:
+        raise TestnetPayoutRejectedError("Stellar rejected the prize transaction. Confirm the treasury has enough Testnet XLM for the prize and transaction fee.") from exc
     return str(result["hash"])

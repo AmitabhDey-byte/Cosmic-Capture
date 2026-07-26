@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from .config import get_settings
 from .database import database_lifespan
 from .schemas import DuoQueueInput, FeedbackInput, KiraInput, MatchInput, PlayerInput, PowerupPurchaseInput, RewardClaimInput, STELLAR_PUBLIC_KEY, TransactionInput
-from .stellar import pay_astra, pay_testnet_xlm
+from .stellar import TestnetPayoutConfigurationError, TestnetPayoutRejectedError, pay_astra, pay_testnet_xlm
 
 logger = logging.getLogger("stellar_arena.api")
 settings = get_settings()
@@ -488,6 +488,12 @@ async def claim_testnet_win_xlm(payload: RewardClaimInput, request: Request):
         return {"transactionHash": already_claimed, "amount": amount, "assetCode": "XLM", "status": "already_claimed"}
     try:
         transaction_hash = await asyncio.to_thread(pay_testnet_xlm, settings, payload.wallet_address, amount)
+    except TestnetPayoutConfigurationError as exc:
+        logger.warning("Testnet winner treasury configuration error: %s", exc)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
+    except TestnetPayoutRejectedError as exc:
+        logger.warning("Testnet winner prize rejected: %s", exc)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     except Exception as exc:
         logger.warning("Testnet winner prize failed: %s", type(exc).__name__)
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="The Testnet prize could not be sent. Check the funded treasury and try again.") from exc
