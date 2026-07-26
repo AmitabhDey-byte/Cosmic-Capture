@@ -61,7 +61,7 @@ Set `GEMINI_API_KEY` in `.env` to make Kira use Gemini through the API. The key 
 
 | Variable | Location | Purpose |
 | --- | --- | --- |
-| `VITE_GAME_API_URL` | frontend | Base URL for the game/Kira API. |
+| `VITE_GAME_API_URL` | frontend | Optional API origin for local development. Leave empty on Vercel to use the same-origin FastAPI Function at `/api`. |
 | `VITE_SOROBAN_CONTRACT_ID` | frontend | Testnet contract address after deployment. |
 | `VITE_SENTRY_DSN` | frontend | Optional browser error tracking. |
 | `VITE_POSTHOG_KEY` | frontend | Optional product analytics. |
@@ -80,7 +80,18 @@ Set `GEMINI_API_KEY` in `.env` to make Kira use Gemini through the API. The key 
 | `RESULT_VERIFIER_SECRET` | server only | Secret for the backend-only result-verifier Stellar account. Never commit or prefix with `VITE_`. |
 | `STELLAR_POWERUP_TREASURY_ADDRESS` | server only | Must match the public checkout destination; FastAPI verifies XLM payments to this address before granting a power-up. |
 
-The FastAPI service exposes `GET /health`, `GET /api/leaderboard`, and write routes for players, matches, transactions, feedback, and Kira. It adds CORS, schema validation, connection pooling, safe error responses, and shutdown handling. The migration at `db/migrations/001_initial.sql` stores `display_name`, `wallet_address`, `wallet_provider`, match result hashes, and each Stellar transaction hash separately for auditability.
+The FastAPI service exposes `GET /health`, `GET /api/health`, `GET /api/leaderboard`, and write routes for players, matches, transactions, power-up receipts, feedback, and Kira. It adds CORS, schema validation, connection pooling, safe error responses, and shutdown handling. The migrations store `display_name`, `wallet_address`, match result hashes, Stellar transaction hashes, and verified power-up ownership separately for auditability.
+
+## Deploy on Vercel
+
+This repository now deploys the Vite client and FastAPI API together. `api/index.py` exports the FastAPI app as a Vercel Function, while `vercel.json` keeps `/api/*` requests on that function and routes every other URL to the React SPA.
+
+1. Push the repository to GitHub and import it into Vercel.
+2. In **Project Settings → Environment Variables**, add the server-only values from `.env.example`: at minimum `DATABASE_URL`, `DATABASE_SSL=true`, `CLIENT_ORIGIN=https://your-domain.vercel.app`, and the Stellar/Gemini variables you plan to enable.
+3. Add the public `VITE_` values there too. Leave `VITE_GAME_API_URL` empty so browser requests use the same Vercel domain. `VITE_POWERUP_TREASURY_ADDRESS` and `STELLAR_POWERUP_TREASURY_ADDRESS` must contain the same funded Stellar Testnet public address.
+4. Run `npm run db:migrate` once against the production Neon database before enabling checkout, then deploy. Vercel detects the Vite build and root `requirements.txt` automatically.
+
+For a CLI deploy after linking the project, run `npx vercel deploy --prod`. Vercel documents FastAPI Functions and Vite SPA rewrites in its [FastAPI guide](https://vercel.com/docs/frameworks/backend/fastapi) and [Vite guide](https://vercel.com/docs/frameworks/frontend/vite).
 
 ## Stellar wallets
 
@@ -139,7 +150,7 @@ The Vercel workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy
 - `VERCEL_PROJECT_ID`
 - `VITE_SENTRY_DSN` and `VITE_POSTHOG_KEY` (optional)
 
-It also expects `VITE_GAME_API_URL` as a repository variable. This guard prevents accidental deployments with missing secrets.
+Configure the application runtime secrets in Vercel itself; the API and browser use the same deployment origin by default.
 
 ## Project map
 
@@ -149,11 +160,14 @@ src/
   lib/wallets.ts          Freighter + Albedo connections
   lib/observability.ts    Optional Sentry + PostHog setup
 backend/app/main.py       FastAPI game API + Gemini guide endpoint
+api/index.py              Vercel FastAPI Function entrypoint
 backend/app/schemas.py    Validated API payloads
 backend/scripts/migrate.py PostgreSQL migration runner
 backend/requirements.txt  Pinned Python service dependencies
 db/migrations/            Player, match, transaction, and feedback schema
 Dockerfile                Production container for the game API
+vercel.json               Vite SPA + same-origin API routing
+requirements.txt          Vercel Python dependency entrypoint
 contracts/stellar-arena/  Soroban contract MVP
 public/art/               Generated project art
 .github/workflows/        CI and guarded Vercel deployment

@@ -132,6 +132,7 @@ async def verify_powerup_payment(payload: PowerupPurchaseInput) -> Decimal:
 
 
 @app.get("/health")
+@app.get("/api/health")
 async def health(request: Request):
     await pool_for(request).execute("SELECT 1")
     return {"ok": True, "database": "connected", "service": "fastapi"}

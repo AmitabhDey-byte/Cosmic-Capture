@@ -1,10 +1,9 @@
-const base = import.meta.env.VITE_GAME_API_URL?.replace(/\/$/, '')
+export const gameApiBase = import.meta.env.VITE_GAME_API_URL?.replace(/\/$/, '') || ''
 
 type PlayerPayload = { walletAddress: string; displayName: string; walletProvider: string; avatarKey?: string }
 
 async function post(path: string, data: Record<string, unknown>) {
-  if (!base) return null
-  const response = await fetch(`${base}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+  const response = await fetch(`${gameApiBase}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
   if (!response.ok) throw new Error(`API request failed: ${response.status}`)
   return response.json()
 }
@@ -26,8 +25,7 @@ export function verifyPowerupPurchase(payload: PlayerPayload & { txHash: string;
 }
 
 export async function fetchOwnedPowerups(walletAddress: string): Promise<string[]> {
-  if (!base) return []
-  const response = await fetch(`${base}/api/powerups/${walletAddress}`)
+  const response = await fetch(`${gameApiBase}/api/powerups/${walletAddress}`)
   if (!response.ok) throw new Error(`API request failed: ${response.status}`)
   const payload = await response.json() as { powerups?: { powerup_id?: string }[] }
   return payload.powerups?.map((powerup) => powerup.powerup_id).filter((id): id is string => Boolean(id)) || []

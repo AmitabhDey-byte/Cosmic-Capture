@@ -6,7 +6,7 @@ import {
   Swords, Target, Trophy, Users, Wallet, X, Zap,
 } from 'lucide-react'
 import { connectAlbedo, connectFreighter, type WalletSession } from './lib/wallets'
-import { fetchOwnedPowerups, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase } from './lib/api'
+import { fetchOwnedPowerups, gameApiBase, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase } from './lib/api'
 import { track } from './lib/observability'
 import type { ArenaRun } from './game/StellarArena'
 import { configuredAstraAsset, configuredPowerupTreasury, createAstraTrustline, purchasePowerupWithXlm } from './lib/testnetCurrency'
@@ -183,7 +183,7 @@ function App() {
   const buyPowerup = async (powerup: Powerup) => {
     if (!wallet) return setWalletModal(true)
     if (!configuredPowerupTreasury()) return showNotice('Set VITE_POWERUP_TREASURY_ADDRESS before opening XLM checkout.')
-    if (!import.meta.env.VITE_GAME_API_URL) return showNotice('Set VITE_GAME_API_URL so the FastAPI verifier can unlock your purchase.')
+    if (!gameApiBase && !import.meta.env.PROD) return showNotice('Run the FastAPI service or set VITE_GAME_API_URL so checkout can verify the purchase.')
     if (ownedPowerups.includes(powerup.id)) return showNotice(`${powerup.name} is already equipped.`)
     setPurchasingPowerup(powerup.id)
     try {
@@ -215,9 +215,7 @@ function App() {
     }
     setGeminiLoading(true)
     try {
-      const apiBase = import.meta.env.VITE_GAME_API_URL
-      if (!apiBase) throw new Error('Local guide mode')
-      const response = await fetch(`${apiBase.replace(/\/$/, '')}/api/kira`, {
+      const response = await fetch(`${gameApiBase}/api/kira`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }),
       })
       if (!response.ok) throw new Error('Guide service unavailable')
@@ -238,9 +236,7 @@ function App() {
     const fallback = `Kira directive: sweep the lantern arc, save ${abilities[selectedAbility].name} for pressure, then secure ${coreGoal} cores before extraction.`
     setDirectiveLoading(true)
     try {
-      const apiBase = import.meta.env.VITE_GAME_API_URL
-      if (!apiBase) throw new Error('Offline briefing')
-      const response = await fetch(`${apiBase.replace(/\/$/, '')}/api/kira`, {
+      const response = await fetch(`${gameApiBase}/api/kira`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: 'briefing', mode: selectedMode, ability: abilities[selectedAbility].name }),
       })
