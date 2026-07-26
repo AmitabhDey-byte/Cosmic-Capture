@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+* { box-sizing: border-box; }
+html { background: #0a071c; }
+body { margin: 0; min-width: 320px; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; color: #f8f6ff; background: #0a071c; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { cursor: wait; opacity: .7; }
+a { color: inherit; }
