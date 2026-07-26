@@ -21,3 +21,22 @@ def pay_astra(settings: Settings, destination: str, amount: str) -> str:
     transaction.sign(issuer)
     result = server.submit_transaction(transaction)
     return str(result["hash"])
+
+
+def pay_testnet_xlm(settings: Settings, destination: str, amount: str) -> str:
+    """Send a native-XLM Testnet prize from the backend-controlled treasury."""
+    if not settings.stellar_win_reward_treasury_secret:
+        raise ValueError("STELLAR_WIN_REWARD_TREASURY_SECRET is not configured.")
+    treasury = Keypair.from_secret(settings.stellar_win_reward_treasury_secret)
+    server = Server(settings.stellar_horizon_url)
+    account = server.load_account(treasury.public_key)
+    transaction = (
+        TransactionBuilder(account, network_passphrase=Network.TESTNET, base_fee=100)
+        .append_payment_op(destination=destination, asset=Asset.native(), amount=amount)
+        .add_text_memo("SA-WIN-PRIZE")
+        .set_timeout(45)
+        .build()
+    )
+    transaction.sign(treasury)
+    result = server.submit_transaction(transaction)
+    return str(result["hash"])

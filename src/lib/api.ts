@@ -1,10 +1,13 @@
 export const gameApiBase = import.meta.env.VITE_GAME_API_URL?.replace(/\/$/, '') || ''
 
-type PlayerPayload = { walletAddress: string; displayName: string; walletProvider: string; avatarKey?: string }
+type PlayerPayload = { walletAddress: string; displayName: string; age?: number; walletProvider: string; avatarKey?: string }
 
 async function post(path: string, data: Record<string, unknown>) {
   const response = await fetch(`${gameApiBase}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-  if (!response.ok) throw new Error(`API request failed: ${response.status}`)
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: string; detail?: string } | null
+    throw new Error(body?.error || body?.detail || `API request failed: ${response.status}`)
+  }
   return response.json()
 }
 
@@ -12,8 +15,35 @@ export function persistPlayer(payload: PlayerPayload) {
   return post('/api/players/upsert', payload)
 }
 
-export function persistLocalMatch(payload: PlayerPayload & { cores: number; durationSeconds: number }) {
-  return post('/api/matches', { ...payload, mode: 'solo', cores: payload.cores, durationSeconds: payload.durationSeconds, matchRef: `practice-${payload.walletAddress}-${Date.now()}` })
+export async function fetchPlayerProfile(walletAddress: string): Promise<{ display_name: string; age: number | null; wallet_provider: string } | null> {
+  const response = await fetch(`${gameApiBase}/api/players/${walletAddress}`)
+  if (!response.ok) throw new Error(`API request failed: ${response.status}`)
+  const payload = await response.json() as { player?: { display_name: string; age: number | null; wallet_provider: string } | null }
+  return payload.player || null
+}
+
+export async function persistLocalMatch(payload: PlayerPayload & { mode: 'solo' | 'duo' | 'tournament'; cores: number; placement: number; durationSeconds: number; matchRef: string }) {
+  return post('/api/matches', payload) as Promise<{ match: { match_ref: string; verified: boolean } }>
+}
+
+export async function claimTestnetWinXlm(payload: PlayerPayload & { matchRef: string }) {
+  return post('/api/rewards/win-claim', payload) as Promise<{ transactionHash: string; amount: string; assetCode: string; status: string }>
+}
+
+export type DuoQueueStatus = { status: 'idle' | 'queued' | 'matched'; lobbyCode?: string; partner?: string }
+
+export function joinDuoQueue(payload: PlayerPayload) {
+  return post('/api/duo/join', payload) as Promise<DuoQueueStatus>
+}
+
+export async function fetchDuoQueue(walletAddress: string): Promise<DuoQueueStatus> {
+  const response = await fetch(`${gameApiBase}/api/duo/${walletAddress}`)
+  if (!response.ok) throw new Error(`API request failed: ${response.status}`)
+  return response.json() as Promise<DuoQueueStatus>
+}
+
+export function leaveDuoQueue(walletAddress: string) {
+  return post(`/api/duo/${walletAddress}/leave`, {}) as Promise<DuoQueueStatus>
 }
 
 export function persistStellarTransaction(payload: PlayerPayload & { txHash: string; action: string; contractId?: string; status?: string; metadata?: Record<string, unknown> }) {

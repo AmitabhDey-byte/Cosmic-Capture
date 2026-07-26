@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     stellar_game_asset_code: str = "ASTRA"
     stellar_game_asset_issuer: str | None = None
     stellar_reward_issuer_secret: str | None = None
+    stellar_win_reward_treasury_secret: str | None = None
+    stellar_win_reward_amount: str = "1.0000000"
     stellar_powerup_treasury_address: str | None = None
     soroban_rpc_url: str = "https://soroban-testnet.stellar.org"
     result_verifier_secret: str | None = None

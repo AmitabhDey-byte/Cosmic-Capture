@@ -11,6 +11,7 @@ TX_HASH = re.compile(r"^[a-fA-F0-9]{64}$")
 class PlayerInput(BaseModel):
     wallet_address: Annotated[str, Field(alias="walletAddress", min_length=56, max_length=56)]
     display_name: Annotated[str, Field(alias="displayName", default="Pilot", max_length=32)] = "Pilot"
+    age: Annotated[int | None, Field(default=None, ge=13, le=120)] = None
     wallet_provider: Annotated[str, Field(alias="walletProvider", default="Unknown", max_length=32)] = "Unknown"
     avatar_key: Annotated[str, Field(alias="avatarKey", default="kira-pixel", max_length=64)] = "kira-pixel"
 
@@ -104,3 +105,7 @@ class KiraInput(BaseModel):
 
 class RewardClaimInput(PlayerInput):
     match_ref: Annotated[str, Field(alias="matchRef", min_length=1, max_length=128)]
+
+
+class DuoQueueInput(PlayerInput):
+    pass

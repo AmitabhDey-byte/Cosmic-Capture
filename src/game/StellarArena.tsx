@@ -89,7 +89,7 @@ export interface GameState {
   coresCaptured: number;
 }
 
-export type ArenaRun = { cores: number; shards: number; score: number; durationSeconds: number };
+export type ArenaRun = { cores: number; shards: number; score: number; durationSeconds: number; placement: number; won: boolean };
 type MissionPhase = 'briefing' | 'playing' | 'finished';
 type Props = {
   mode: GameMode;
@@ -477,7 +477,14 @@ export const StellarArena: React.FC<Props> = ({ mode: initialMode, walletConnect
     setOutcome(placement === 1 ? 'Victory — your flight owns the arena.' : `Extraction complete — you placed #${placement}.`);
     if (result === 'cleared') setOutcome('Arena cleared — every rival scout was destroyed.');
     if (result === 'destroyed') setOutcome('Hull lost — your flight has been extracted from the arena.');
-    onComplete({ cores: state.coresCaptured, shards: state.coresCaptured * 2 + bonus, score: state.player.score, durationSeconds: ROUND_SECONDS });
+    onComplete({
+      cores: state.coresCaptured,
+      shards: state.coresCaptured * 2 + bonus,
+      score: state.player.score,
+      durationSeconds: ROUND_SECONDS,
+      placement,
+      won: placement === 1 && result !== 'destroyed',
+    });
   }, [buildScoreboard, directive, onComplete]);
 
   const handleModeChange = useCallback(

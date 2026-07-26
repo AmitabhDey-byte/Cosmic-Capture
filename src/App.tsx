@@ -6,7 +6,7 @@ import {
   Swords, Target, Trophy, Users, Wallet, X, Zap,
 } from 'lucide-react'
 import { connectAlbedo, connectFreighter, type WalletSession } from './lib/wallets'
-import { fetchOwnedPowerups, gameApiBase, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase } from './lib/api'
+import { claimTestnetWinXlm, fetchDuoQueue, fetchOwnedPowerups, fetchPlayerProfile, gameApiBase, joinDuoQueue, leaveDuoQueue, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase, type DuoQueueStatus } from './lib/api'
 import { track } from './lib/observability'
 import type { ArenaRun } from './game/StellarArena'
 import { configuredAstraAsset, configuredPowerupTreasury, createAstraTrustline, purchasePowerupWithXlm } from './lib/testnetCurrency'
@@ -84,6 +84,10 @@ function App() {
   const [walletModal, setWalletModal] = useState(false)
   const [wallet, setWallet] = useState<WalletSession | null>(null)
   const [displayName, setDisplayName] = useState('Sora Skyline')
+  const [age, setAge] = useState('')
+  const [profileComplete, setProfileComplete] = useState(false)
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [connecting, setConnecting] = useState<'freighter' | 'albedo' | null>(null)
   const [notice, setNotice] = useState('')
   const [selectedMode, setSelectedMode] = useState<Mode>('Solo')
@@ -139,6 +143,17 @@ function App() {
       setWallet(session)
       track('wallet_connected', { provider: session.provider })
       void persistPlayer({ walletAddress: session.address, walletProvider: session.provider, displayName, avatarKey: 'kira-pixel' }).catch(() => track('api_sync_failed', { event: 'player_upsert' }))
+      void fetchPlayerProfile(session.address)
+        .then((profile) => {
+          if (profile?.age) {
+            setDisplayName(profile.display_name)
+            setAge(String(profile.age))
+            setProfileComplete(true)
+          } else {
+            setOnboardingOpen(true)
+          }
+        })
+        .catch(() => setOnboardingOpen(true))
       void fetchOwnedPowerups(session.address)
         .then((ids) => setOwnedPowerups(ids.filter((id): id is PowerupId => Boolean(powerupById(id as PowerupId)))))
         .catch(() => track('api_sync_failed', { event: 'powerup_restore' }))
@@ -158,11 +173,40 @@ function App() {
       .catch(() => showNotice('Could not reach the registry. Your name stays local until the API is online.'))
   }
 
+  const completePilotProfile = async () => {
+    if (!wallet) return setWalletModal(true)
+    const parsedAge = Number(age)
+    if (!displayName.trim() || !Number.isInteger(parsedAge) || parsedAge < 13 || parsedAge > 120) {
+      return showNotice('Enter a callsign and an age from 13 to 120 to enter the arena.')
+    }
+    setProfileSaving(true)
+    try {
+      await persistPlayer({ walletAddress: wallet.address, walletProvider: wallet.provider, displayName: displayName.trim(), age: parsedAge, avatarKey: 'kira-guide-v2' })
+      setProfileComplete(true)
+      setOnboardingOpen(false)
+      showNotice('Pilot profile registered. Welcome to the arena.')
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : 'Profile registration failed.')
+    } finally {
+      setProfileSaving(false)
+    }
+  }
+
   const recordArenaRun = (run: ArenaRun) => {
-    track('arena_run_completed', { cores: run.cores, shards: run.shards, score: run.score, mode: selectedMode })
+    track('arena_run_completed', { cores: run.cores, shards: run.shards, score: run.score, placement: run.placement, mode: selectedMode })
     if (wallet) {
-      void persistLocalMatch({ walletAddress: wallet.address, walletProvider: wallet.provider, displayName, avatarKey: 'kira-guide-v2', cores: run.cores, durationSeconds: run.durationSeconds })
-        .then(() => showNotice(`Run saved: ${run.cores} cores and ${run.shards} Astra queued for verification.`))
+      const matchRef = `arena-${crypto.randomUUID()}`
+      const mode = selectedMode.toLowerCase() as 'solo' | 'duo' | 'tournament'
+      void persistLocalMatch({ walletAddress: wallet.address, walletProvider: wallet.provider, displayName, age: Number(age), avatarKey: 'kira-guide-v2', mode, cores: run.cores, placement: run.placement, durationSeconds: run.durationSeconds, matchRef })
+        .then(async () => {
+          if (!run.won) {
+            showNotice(`Run saved: placed #${run.placement}. Capture more cores to win the next flight.`)
+            return
+          }
+          showNotice('Victory confirmed. Sending your 1 XLM Testnet prize…')
+          const prize = await claimTestnetWinXlm({ walletAddress: wallet.address, walletProvider: wallet.provider, displayName, age: Number(age), avatarKey: 'kira-guide-v2', matchRef })
+          showNotice(`${prize.amount} ${prize.assetCode} Testnet prize sent — ${shortKey(prize.transactionHash)}.`)
+        })
         .catch(() => showNotice(`Run complete: ${run.cores} cores secured locally. API sync will retry when online.`))
     } else {
       showNotice(`Run complete: ${run.cores} cores secured. Connect a wallet to queue Testnet rewards.`)
@@ -276,7 +320,7 @@ function App() {
 
       <main>
         {page === 'home' && <HomePage go={go} setWalletModal={setWalletModal} />}
-        {page === 'play' && <RealPlayPage selectedMode={selectedMode} setSelectedMode={setSelectedMode} selectedAbility={selectedAbility} setSelectedAbility={setSelectedAbility} wallet={wallet} equippedPowerups={ownedPowerups} onEnableAstra={enableAstraRewards} onComplete={recordArenaRun} directive={directive} directiveLoading={directiveLoading} onGenerateDirective={generateMissionDirective} />}
+        {page === 'play' && (wallet && profileComplete ? <RealPlayPage selectedMode={selectedMode} setSelectedMode={setSelectedMode} selectedAbility={selectedAbility} setSelectedAbility={setSelectedAbility} wallet={wallet} displayName={displayName} age={Number(age)} equippedPowerups={ownedPowerups} onEnableAstra={enableAstraRewards} onComplete={recordArenaRun} directive={directive} directiveLoading={directiveLoading} onGenerateDirective={generateMissionDirective} /> : <ArenaAccessGate walletConnected={Boolean(wallet)} openWallet={() => setWalletModal(true)} openProfile={() => setOnboardingOpen(true)} />)}
         {page === 'missions' && <MissionPage showNotice={showNotice} />}
         {page === 'hangar' && <HangarPage showNotice={showNotice} />}
         {page === 'store' && <StorePage wallet={wallet} ownedPowerups={ownedPowerups} purchasingPowerup={purchasingPowerup} onBuy={buyPowerup} setWalletModal={setWalletModal} />}
@@ -296,6 +340,7 @@ function App() {
 
       <Kira geminiOpen={geminiOpen} setGeminiOpen={setGeminiOpen} geminiReply={geminiReply} geminiLoading={geminiLoading} askKira={askKira} />
       {walletModal && <WalletModal close={() => setWalletModal(false)} connect={connect} connecting={connecting} />}
+      {onboardingOpen && <PilotOnboarding close={() => setOnboardingOpen(false)} displayName={displayName} setDisplayName={setDisplayName} age={age} setAge={setAge} saving={profileSaving} submit={completePilotProfile} />}
       {notice && <div className="toast"><Sparkles size={17} /> {notice}</div>}
 
       <section className="mini-panel">
@@ -367,16 +412,39 @@ function PlayPage({ selectedMode, setSelectedMode, selectedAbility, setSelectedA
 
 void PlayPage
 
-function RealPlayPage({ selectedMode, setSelectedMode, selectedAbility, setSelectedAbility, wallet, equippedPowerups, onEnableAstra, onComplete, directive, directiveLoading, onGenerateDirective }: { selectedMode: Mode; setSelectedMode: (mode: Mode) => void; selectedAbility: number; setSelectedAbility: (ability: number) => void; wallet: WalletSession | null; equippedPowerups: PowerupId[]; onEnableAstra: () => void; onComplete: (run: ArenaRun) => void; directive: TacticalDirective | null; directiveLoading: boolean; onGenerateDirective: () => void }) {
+function RealPlayPage({ selectedMode, setSelectedMode, selectedAbility, setSelectedAbility, wallet, displayName, age, equippedPowerups, onEnableAstra, onComplete, directive, directiveLoading, onGenerateDirective }: { selectedMode: Mode; setSelectedMode: (mode: Mode) => void; selectedAbility: number; setSelectedAbility: (ability: number) => void; wallet: WalletSession | null; displayName: string; age: number; equippedPowerups: PowerupId[]; onEnableAstra: () => void; onComplete: (run: ArenaRun) => void; directive: TacticalDirective | null; directiveLoading: boolean; onGenerateDirective: () => void }) {
   return <section className="real-play-page section-wrap">
     <div className="game-page-intro"><div><span className="eyebrow"><span /> ACTUAL PLAYABLE ARENA</span><h1>Fly the run.<br /><i>Own the sky.</i></h1><p>This is a real Canvas game loop: fly with keyboard or touch, aim and fire directly, capture Stellar Cores, and outscore rival scouts before the 90-second extraction.</p></div><div className="engine-badge"><Bolt size={20} /><span>CANVAS COMBAT ENGINE</span><b>90 SECOND RUN</b></div></div>
     <div className="game-loadout comic-panel"><div><span>MODE</span>{modes.map(mode => <button key={mode.name} className={selectedMode === mode.name ? 'selected' : ''} onClick={() => setSelectedMode(mode.name)}><b>{mode.name}</b><small>{mode.note}</small></button>)}</div><div><span>ACTIVE ABILITY</span>{abilities.map((ability, index) => { const Icon = ability.icon; return <button key={ability.name} className={selectedAbility === index ? 'selected' : ''} onClick={() => setSelectedAbility(index)}><Icon size={16} /><b>{ability.name}</b><small>{ability.cool}</small></button> })}</div><aside><Sparkles size={18} /><b>{wallet ? (configuredAstraAsset() ? 'ASTRA TESTNET READY' : 'PILOT LINKED / ASSET SETUP NEEDED') : 'GUEST LAUNCH MODE'}</b><p>{wallet ? 'Create your ASTRA trustline once, then verified arena results can settle as a real Stellar Testnet utility asset.' : 'You can play immediately. Connect Freighter or Albedo before enabling Testnet rewards.'}</p>{wallet && <button className="astra-button" onClick={onEnableAstra}>{configuredAstraAsset() ? 'Enable ASTRA rewards' : 'Configure ASTRA issuer'}</button>}</aside></div>
     <section className={`director-card comic-panel ${directive ? 'has-directive' : ''}`}><div className="director-portrait" /><div><span><Sparkles size={13} /> KIRA / GEMINI GAME DIRECTOR</span><h3>{directive ? 'Live flight contract locked.' : 'Draft a smarter flight plan.'}</h3><p>{directive ? directive.text : 'Kira reads your selected kit and writes a tactical route before launch. The contract becomes a real bonus objective in your arena run.'}</p>{directive && <div className="director-contract"><b>{directive.coreGoal} CORE CONTRACT</b><em>+{directive.bonusShards} ASTRA BONUS</em><small>{directive.poweredByGemini ? 'Generated by your secure Gemini service' : 'Offline tactical fallback'}</small></div>}</div><button onClick={onGenerateDirective} disabled={directiveLoading}>{directiveLoading ? 'KIRA IS PLOTTING…' : directive ? 'Reroll flight plan' : 'Generate flight plan'}</button></section>
+    {selectedMode === 'Duo' && wallet && <DuoMatchmaker wallet={wallet} displayName={displayName} age={age} />}
     {equippedPowerups.length > 0 && <div className="equipped-powerups" aria-label="Equipped power-ups"><span><ShoppingBag size={15} /> XLM MODULES EQUIPPED</span>{equippedPowerups.map(id => <b key={id}>{powerupById(id)?.name}</b>)}</div>}
     <Suspense fallback={<GameSurfaceLoading label="Preparing the arena" />}>
       <StellarArena mode={selectedMode === 'Duo' ? 'duo' : 'solo'} walletConnected={!!wallet} equippedPowerups={equippedPowerups} directive={directive} onComplete={onComplete} />
     </Suspense>
   </section>
+}
+
+function DuoMatchmaker({ wallet, displayName, age }: { wallet: WalletSession; displayName: string; age: number }) {
+  const [queue, setQueue] = useState<DuoQueueStatus>({ status: 'idle' })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    if (queue.status !== 'queued') return
+    const timer = window.setInterval(() => { void fetchDuoQueue(wallet.address).then(setQueue).catch(() => setError('Matchmaking is temporarily offline.')) }, 3000)
+    return () => window.clearInterval(timer)
+  }, [queue.status, wallet.address])
+  const findCopilot = async () => {
+    setLoading(true); setError('')
+    try { setQueue(await joinDuoQueue({ walletAddress: wallet.address, walletProvider: wallet.provider, displayName, age, avatarKey: 'kira-guide-v2' })) }
+    catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not enter Duo matchmaking.') }
+    finally { setLoading(false) }
+  }
+  const leave = async () => {
+    setLoading(true)
+    try { setQueue(await leaveDuoQueue(wallet.address)) } finally { setLoading(false) }
+  }
+  return <section className={`duo-lobby comic-panel ${queue.status}`}><div><span><Users size={15} /> DUO MATCHMAKING / NEON RELAY</span><h3>{queue.status === 'matched' ? `Co-pilot found: ${queue.partner}` : queue.status === 'queued' ? 'Searching the star lanes…' : 'Find a real co-pilot.'}</h3><p>{queue.status === 'matched' ? `Lobby ${queue.lobbyCode?.slice(0, 8).toUpperCase()} is ready. Both pilots can launch the Duo arena from their own device.` : 'Pair with another wallet-connected pilot. The queue is stored in Postgres and refreshes every three seconds.'}</p></div>{queue.status === 'idle' ? <button onClick={findCopilot} disabled={loading}>{loading ? 'Opening relay…' : 'Find co-pilot'} <Users size={15} /></button> : queue.status === 'queued' ? <button onClick={leave} disabled={loading}>Leave queue <X size={15} /></button> : <b>LOBBY READY</b>}{error && <small>{error}</small>}</section>
 }
 
 function MissionPage({ showNotice }: { showNotice: (s: string) => void }) {
@@ -450,6 +518,14 @@ function GameSurfaceLoading({ label }: { label: string }) { return <div classNam
 function LeaderboardPage() { return <section className="leaderboard-page section-wrap"><div className="page-intro"><span className="eyebrow"><span /> SEASON 01 / NEON CUP</span><h1>The sky remembers<br /><i>the brave.</i></h1><p>Ranked by verified match results. Last refresh: just now.</p></div><div className="rank-layout"><div className="rank-list comic-panel"><div className="rank-header"><span>RANK / PILOT</span><span>CORE SCORE</span><span>FORM</span></div>{rankings.map((r, i) => <article className={i === 3 ? 'your-rank' : ''} key={r[0]}><b className="rank-num">0{i + 1}</b><span className={`rank-avatar av-${i}`}>{r[3]}</span><div><h3>{r[0]}</h3><small>{r[2]}</small></div><strong>{r[1]}</strong><span className="rank-trend">↗ {12 - i * 2}</span></article>)}</div><aside className="season-card"><div><Crown /><span>SEASON ENDS IN</span><b>12D 04H</b></div><h3>Reach Astral rank</h3><p>Top 100 receive the limited Comet Crest badge on Stellar Testnet.</p><div className="rank-meter"><span style={{ width: '62%' }} /></div><small>11,340 / 18,000 RP</small><button>View season rules <ChevronRight size={15} /></button></aside></div></section> }
 
 function ProfilePage({ wallet, setWalletModal, showNotice, displayName, setDisplayName, savePilotIdentity }: { wallet: WalletSession | null; setWalletModal: (b: boolean) => void; showNotice: (s: string) => void; displayName: string; setDisplayName: (value: string) => void; savePilotIdentity: () => void }) { return <section className="profile-page section-wrap"><div className="profile-banner scene-city"><div><span>THE FLIGHT LOG OF</span><h1>{displayName.split(' ')[0]?.toUpperCase() || 'PILOT'}</h1><p>“I’m not lost. I’m exploring in a really committed way.”</p></div></div><div className="profile-grid"><section className="pilot-card comic-panel"><div className="pilot-avatar avatar-art" aria-label="Pilot portrait" /><div><span>RANK 04 · COMET</span><h2>{displayName.toUpperCase()}</h2><p>{wallet ? `${wallet.provider} / ${shortKey(wallet.address)}` : 'Guest pilot — secure your arena identity.'}</p><label className="pilot-name-field">CALLSIGN<input maxLength={32} value={displayName} onChange={event => setDisplayName(event.target.value)} placeholder="Your callsign" /></label></div><button onClick={() => wallet ? savePilotIdentity() : setWalletModal(true)}>{wallet ? 'Save pilot' : 'Connect wallet'}</button></section><section className="badge-case"><span><Medal /> BADGE CASE / SHOWCASE</span><div><Badge icon="✦" name="First Light" /><Badge icon="☄" name="Core Keeper" /><Badge icon="⚡" name="Swift Shift" /><Badge icon="♜" name="Kitsune Signal" /></div></section><section className="activity-card comic-panel"><span>RECENTLY RECORDED</span><article><i className="win">W</i><div><b>Solo · Shibuya Drift</b><small>Placed #1 / 8 · 9 cores captured</small></div><em>+240 RP</em></article><article><i className="win">W</i><div><b>Duo · Kyoto Orbit</b><small>Placed #2 / 4 · Kira Byte joined</small></div><em>+180 RP</em></article><button onClick={() => showNotice('Full match history will load from your game backend.')}>Open match history <ChevronRight size={15} /></button></section></div></section> }
+
+function ArenaAccessGate({ walletConnected, openWallet, openProfile }: { walletConnected: boolean; openWallet: () => void; openProfile: () => void }) {
+  return <section className="arena-access section-wrap"><div className="arena-access-card comic-panel"><span className="eyebrow"><span /> PILOT CLEARANCE REQUIRED</span><Rocket size={46} /><h1>{walletConnected ? <>One quick<br /><i>pilot profile.</i></> : <>Connect before<br /><i>you launch.</i></>}</h1><p>{walletConnected ? 'Add your callsign and age once. It lets the arena save your identity, match record, and Testnet receipts to the right Stellar wallet.' : 'The prologue, crew files, hangar, and arcade remain open to everyone. Arena flights require a connected Stellar wallet so results and rewards go to the correct pilot.'}</p><button className="primary-btn" onClick={walletConnected ? openProfile : openWallet}>{walletConnected ? 'Complete pilot profile' : 'Connect Stellar wallet'} <ChevronRight size={17} /></button><small>Freighter and Albedo supported. Your secret key never leaves your wallet.</small></div></section>
+}
+
+function PilotOnboarding({ close, displayName, setDisplayName, age, setAge, saving, submit }: { close: () => void; displayName: string; setDisplayName: (value: string) => void; age: string; setAge: (value: string) => void; saving: boolean; submit: () => void }) {
+  return <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="pilot-profile-title"><section className="pilot-onboarding comic-panel"><button className="modal-close" onClick={close} aria-label="Close pilot profile"><X /></button><div className="onboarding-star"><Rocket size={27} /></div><span className="eyebrow"><span /> ARENA REGISTRY / STEP 02</span><h2 id="pilot-profile-title">Name your<br /><i>starship legend.</i></h2><p>We store your public wallet address, callsign, age, match results, and Stellar transaction hashes in the arena registry. No secret keys. Age must be 13 or above.</p><label>CALLSIGN<input value={displayName} maxLength={32} onChange={event => setDisplayName(event.target.value)} autoComplete="nickname" placeholder="Sora Skyline" /></label><label>AGE<input value={age} inputMode="numeric" min="13" max="120" type="number" onChange={event => setAge(event.target.value)} placeholder="18" /></label><button className="primary-btn" disabled={saving} onClick={submit}>{saving ? 'Registering pilot…' : 'Enter the arena'} <Rocket size={16} /></button><small>You can still explore every lore chapter without an account.</small></section></div>
+}
 
 function Badge({ icon, name, locked = false }: { icon: string; name: string; locked?: boolean }) { return <article className={locked ? 'locked' : ''}><b>{icon}</b><span>{name}</span></article> }
 

@@ -14,8 +14,8 @@ from fastapi.responses import JSONResponse
 
 from .config import get_settings
 from .database import database_lifespan
-from .schemas import FeedbackInput, KiraInput, MatchInput, PlayerInput, PowerupPurchaseInput, RewardClaimInput, STELLAR_PUBLIC_KEY, TransactionInput
-from .stellar import pay_astra
+from .schemas import DuoQueueInput, FeedbackInput, KiraInput, MatchInput, PlayerInput, PowerupPurchaseInput, RewardClaimInput, STELLAR_PUBLIC_KEY, TransactionInput
+from .stellar import pay_astra, pay_testnet_xlm
 
 logger = logging.getLogger("stellar_arena.api")
 settings = get_settings()
@@ -70,24 +70,26 @@ async def server_error(_: Request, exc: Exception):
     return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"error": "Unexpected server error"})
 
 
-async def register_player(pool: Pool, player: PlayerInput) -> dict[str, str]:
+async def register_player(pool: Pool, player: PlayerInput) -> dict[str, object]:
     row = await pool.fetchrow(
         """
-        INSERT INTO players (wallet_address, display_name, wallet_provider, avatar_key)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO players (wallet_address, display_name, age, wallet_provider, avatar_key)
+        VALUES ($1, $2, $3, $4, $5)
         ON CONFLICT (wallet_address) DO UPDATE SET
             display_name = EXCLUDED.display_name,
+            age = COALESCE(EXCLUDED.age, players.age),
             wallet_provider = EXCLUDED.wallet_provider,
             avatar_key = EXCLUDED.avatar_key,
             last_seen_at = NOW()
-        RETURNING wallet_address, display_name
+        RETURNING wallet_address, display_name, age
         """,
         player.wallet_address,
         player.display_name,
+        player.age,
         player.wallet_provider,
         player.avatar_key,
     )
-    return {"walletAddress": row["wallet_address"], "displayName": row["display_name"]}
+    return {"walletAddress": row["wallet_address"], "displayName": row["display_name"], "age": row["age"]}
 
 
 def pool_for(request: Request) -> Pool:
@@ -160,10 +162,113 @@ async def upsert_player(payload: PlayerInput, request: Request):
     return {"player": await register_player(pool_for(request), payload)}
 
 
+@app.get("/api/players/{wallet_address}")
+async def get_player_profile(wallet_address: str, request: Request):
+    if not STELLAR_PUBLIC_KEY.fullmatch(wallet_address):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A valid Stellar public address is required.")
+    player = await pool_for(request).fetchrow(
+        "SELECT display_name, age, wallet_provider FROM players WHERE wallet_address = $1",
+        wallet_address,
+    )
+    return {"player": dict(player) if player else None}
+
+
+async def duo_queue_status(pool: Pool, wallet_address: str) -> dict[str, object]:
+    entry = await pool.fetchrow(
+        "SELECT status, lobby_code, queued_at FROM duo_queue_entries WHERE wallet_address = $1",
+        wallet_address,
+    )
+    if not entry:
+        return {"status": "idle"}
+    if entry["status"] == "queued":
+        return {"status": "queued", "queuedAt": entry["queued_at"].isoformat()}
+    lobby = await pool.fetchrow(
+        """SELECT l.lobby_code, l.pilot_one_wallet, l.pilot_two_wallet, p1.display_name AS pilot_one, p2.display_name AS pilot_two
+           FROM duo_lobbies l
+           JOIN players p1 ON p1.wallet_address = l.pilot_one_wallet
+           JOIN players p2 ON p2.wallet_address = l.pilot_two_wallet
+           WHERE l.lobby_code = $1 AND l.status = 'ready'""",
+        entry["lobby_code"],
+    )
+    if not lobby:
+        return {"status": "idle"}
+    partner = lobby["pilot_two"] if lobby["pilot_one_wallet"] == wallet_address else lobby["pilot_one"]
+    return {"status": "matched", "lobbyCode": str(lobby["lobby_code"]), "partner": partner}
+
+
+@app.post("/api/duo/join")
+async def join_duo_queue(payload: DuoQueueInput, request: Request):
+    """Pair two eligible registered pilots using Postgres as a durable lobby queue."""
+    pool = pool_for(request)
+    player = await register_player(pool, payload)
+    if player["age"] is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Complete the pilot profile before joining Duo matchmaking.")
+    async with pool.acquire() as connection:
+        async with connection.transaction():
+            existing = await connection.fetchrow("SELECT status, lobby_code FROM duo_queue_entries WHERE wallet_address = $1 FOR UPDATE", payload.wallet_address)
+            if existing and existing["status"] == "matched":
+                lobby = await connection.fetchrow(
+                    """SELECT l.lobby_code, l.pilot_one_wallet, p1.display_name AS pilot_one, p2.display_name AS pilot_two
+                       FROM duo_lobbies l JOIN players p1 ON p1.wallet_address = l.pilot_one_wallet
+                       JOIN players p2 ON p2.wallet_address = l.pilot_two_wallet WHERE l.lobby_code = $1""",
+                    existing["lobby_code"],
+                )
+                if lobby:
+                    partner = lobby["pilot_two"] if lobby["pilot_one_wallet"] == payload.wallet_address else lobby["pilot_one"]
+                    return {"status": "matched", "lobbyCode": str(lobby["lobby_code"]), "partner": partner}
+            partner = await connection.fetchrow(
+                """SELECT wallet_address, display_name FROM duo_queue_entries
+                   WHERE status = 'queued' AND wallet_address <> $1
+                   ORDER BY queued_at ASC FOR UPDATE SKIP LOCKED LIMIT 1""",
+                payload.wallet_address,
+            )
+            if partner:
+                lobby_code = uuid4()
+                await connection.execute(
+                    "INSERT INTO duo_lobbies (lobby_code, pilot_one_wallet, pilot_two_wallet) VALUES ($1, $2, $3)",
+                    lobby_code, partner["wallet_address"], payload.wallet_address,
+                )
+                await connection.execute(
+                    "UPDATE duo_queue_entries SET status = 'matched', lobby_code = $1, updated_at = NOW() WHERE wallet_address = $2",
+                    lobby_code, partner["wallet_address"],
+                )
+                await connection.execute(
+                    """INSERT INTO duo_queue_entries (wallet_address, display_name, status, lobby_code)
+                       VALUES ($1, $2, 'matched', $3)
+                       ON CONFLICT (wallet_address) DO UPDATE SET display_name = EXCLUDED.display_name, status = 'matched', lobby_code = $3, updated_at = NOW()""",
+                    payload.wallet_address, player["displayName"], lobby_code,
+                )
+                return {"status": "matched", "lobbyCode": str(lobby_code), "partner": partner["display_name"]}
+            await connection.execute(
+                """INSERT INTO duo_queue_entries (wallet_address, display_name, status, lobby_code, queued_at, updated_at)
+                   VALUES ($1, $2, 'queued', NULL, NOW(), NOW())
+                   ON CONFLICT (wallet_address) DO UPDATE SET display_name = EXCLUDED.display_name, status = 'queued', lobby_code = NULL, queued_at = NOW(), updated_at = NOW()""",
+                payload.wallet_address, player["displayName"],
+            )
+    return {"status": "queued"}
+
+
+@app.get("/api/duo/{wallet_address}")
+async def get_duo_queue(wallet_address: str, request: Request):
+    if not STELLAR_PUBLIC_KEY.fullmatch(wallet_address):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A valid Stellar public address is required.")
+    return await duo_queue_status(pool_for(request), wallet_address)
+
+
+@app.post("/api/duo/{wallet_address}/leave")
+async def leave_duo_queue(wallet_address: str, request: Request):
+    if not STELLAR_PUBLIC_KEY.fullmatch(wallet_address):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="A valid Stellar public address is required.")
+    await pool_for(request).execute("DELETE FROM duo_queue_entries WHERE wallet_address = $1 AND status = 'queued'", wallet_address)
+    return {"status": "idle"}
+
+
 @app.post("/api/matches", status_code=status.HTTP_201_CREATED)
 async def record_match(payload: MatchInput, request: Request):
     pool = pool_for(request)
     player = await register_player(pool, payload)
+    if player["age"] is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Complete the pilot profile before entering the arena.")
     match_ref = payload.match_ref or f"practice-{payload.wallet_address}-{uuid4()}"
     row = await pool.fetchrow(
         """
@@ -299,6 +404,53 @@ async def claim_testnet_astra(payload: RewardClaimInput, request: Request):
                 transaction_hash, payload.wallet_address, json.dumps({"matchRef": payload.match_ref, "amount": amount, "asset": settings.stellar_game_asset_code}),
             )
     return {"transactionHash": transaction_hash, "amount": amount, "assetCode": settings.stellar_game_asset_code, "status": "claimed"}
+
+
+@app.post("/api/rewards/win-claim", status_code=status.HTTP_201_CREATED)
+async def claim_testnet_win_xlm(payload: RewardClaimInput, request: Request):
+    """Deliver one native-XLM Testnet prize for a first-place local MVP result.
+
+    This remains deliberately Testnet-only until the planned authoritative multiplayer
+    service signs final results; browser gameplay must never authorize Mainnet payouts.
+    """
+    if not settings.stellar_win_reward_treasury_secret:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Testnet winner treasury is not configured.")
+    try:
+        amount_decimal = Decimal(settings.stellar_win_reward_amount)
+    except InvalidOperation as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Testnet winner prize amount is invalid.") from exc
+    if amount_decimal <= 0 or amount_decimal > Decimal("100"):
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Testnet winner prize amount is outside the allowed range.")
+    amount = f"{amount_decimal:.7f}"
+    pool = pool_for(request)
+    await register_player(pool, payload)
+    match = await pool.fetchrow(
+        "SELECT match_ref, placement FROM matches WHERE match_ref = $1 AND wallet_address = $2",
+        payload.match_ref, payload.wallet_address,
+    )
+    if not match or match["placement"] != 1:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Only a recorded first-place arena result can claim this Testnet prize.")
+    already_claimed = await pool.fetchval("SELECT tx_hash FROM reward_claims WHERE match_ref = $1", payload.match_ref)
+    if already_claimed:
+        return {"transactionHash": already_claimed, "amount": amount, "assetCode": "XLM", "status": "already_claimed"}
+    try:
+        transaction_hash = await asyncio.to_thread(pay_testnet_xlm, settings, payload.wallet_address, amount)
+    except Exception as exc:
+        logger.warning("Testnet winner prize failed: %s", type(exc).__name__)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="The Testnet prize could not be sent. Check the funded treasury and try again.") from exc
+    async with pool.acquire() as connection:
+        async with connection.transaction():
+            await connection.execute(
+                """INSERT INTO reward_claims (match_ref, wallet_address, asset_code, asset_issuer, amount, tx_hash)
+                   VALUES ($1, $2, 'XLM', 'native', $3, $4)""",
+                payload.match_ref, payload.wallet_address, amount, transaction_hash,
+            )
+            await connection.execute(
+                """INSERT INTO stellar_transactions (tx_hash, wallet_address, action, network, contract_id, status, metadata, confirmed_at)
+                   VALUES ($1, $2, 'testnet_xlm_win_prize', 'testnet', NULL, 'confirmed', $3::jsonb, NOW())""",
+                transaction_hash, payload.wallet_address, json.dumps({"matchRef": payload.match_ref, "amount": amount, "asset": "XLM"}),
+            )
+    return {"transactionHash": transaction_hash, "amount": amount, "assetCode": "XLM", "status": "claimed"}
 
 
 KIRA_PROMPTS = {
