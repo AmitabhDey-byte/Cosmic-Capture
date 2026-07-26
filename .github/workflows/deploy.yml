@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-vercel:
+  release-production:
     runs-on: ubuntu-latest
     environment: production
     if: >-
@@ -27,6 +27,8 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      STELLAR_CONTRACT_DEPLOYER_SECRET: ${{ secrets.STELLAR_CONTRACT_DEPLOYER_SECRET }}
+      STELLAR_CONTRACT_ADMIN_ADDRESS: ${{ secrets.STELLAR_CONTRACT_ADMIN_ADDRESS }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,21 +37,48 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - name: Validate Vercel credentials
+      - name: Validate release credentials
         run: |
           test -n "$VERCEL_TOKEN" || (echo "Missing VERCEL_TOKEN repository secret" && exit 1)
           test -n "$VERCEL_ORG_ID" || (echo "Missing VERCEL_ORG_ID repository secret" && exit 1)
           test -n "$VERCEL_PROJECT_ID" || (echo "Missing VERCEL_PROJECT_ID repository secret" && exit 1)
+          test -n "$STELLAR_CONTRACT_DEPLOYER_SECRET" || (echo "Missing STELLAR_CONTRACT_DEPLOYER_SECRET GitHub secret" && exit 1)
+          test -n "$STELLAR_CONTRACT_ADMIN_ADDRESS" || (echo "Missing STELLAR_CONTRACT_ADMIN_ADDRESS GitHub secret" && exit 1)
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+      - name: Build Soroban release WASM
+        run: cargo build --manifest-path contracts/stellar-arena/Cargo.toml --target wasm32v1-none --release
+      - name: Install Stellar CLI
+        uses: stellar/stellar-cli@v26.1.0
+      - name: Deploy and initialize Soroban contract on Testnet
+        id: contract
+        shell: bash
+        run: |
+          contract_id="$(stellar contract deploy \
+            --wasm contracts/stellar-arena/target/wasm32v1-none/release/stellar_arena.wasm \
+            --source-account "$STELLAR_CONTRACT_DEPLOYER_SECRET" \
+            --network testnet | tail -n 1)"
+          [[ "$contract_id" =~ ^C[A-Z2-7]{55}$ ]] || (echo "Stellar CLI did not return a valid contract ID" && exit 1)
+          stellar contract invoke \
+            --id "$contract_id" \
+            --source-account "$STELLAR_CONTRACT_DEPLOYER_SECRET" \
+            --network testnet \
+            -- initialize --admin "$STELLAR_CONTRACT_ADMIN_ADDRESS"
+          echo "contract_id=$contract_id" >> "$GITHUB_OUTPUT"
+          echo "STELLAR_CONTRACT_ID=$contract_id" >> "$GITHUB_ENV"
+          echo "### Soroban Testnet contract: \`$contract_id\`" >> "$GITHUB_STEP_SUMMARY"
+      - run: npm ci
       - name: Pull Vercel production settings
         run: npx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
       - name: Build Vercel artifact
-        run: npx vercel@latest build --prod --token="$VERCEL_TOKEN"
+        run: VITE_SOROBAN_CONTRACT_ID="$STELLAR_CONTRACT_ID" npx vercel@latest build --prod --token="$VERCEL_TOKEN"
       - name: Deploy prebuilt artifact
         id: deploy
         run: |
           url="$(npx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN")"
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed $url"
+          echo "### Vercel production URL: $url" >> "$GITHUB_STEP_SUMMARY"
       - name: Verify production health
         run: curl --fail --retry 5 --retry-delay 4 --retry-connrefused "${{ steps.deploy.outputs.url }}/api/health"
