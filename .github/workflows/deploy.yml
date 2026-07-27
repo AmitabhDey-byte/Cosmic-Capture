@@ -69,6 +69,8 @@ jobs:
           echo "STELLAR_CONTRACT_ID=$contract_id" >> "$GITHUB_ENV"
           echo "### Soroban Testnet contract: \`$contract_id\`" >> "$GITHUB_STEP_SUMMARY"
       - run: npm ci
+      - name: Install uv for the Python Vercel Function build
+        uses: astral-sh/setup-uv@v7
       - name: Pull Vercel production settings
         run: npx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
       - name: Build Vercel artifact
