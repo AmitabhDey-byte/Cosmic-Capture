@@ -190,3 +190,5 @@ public/art/               Generated project art
 ## Product notes
 
 Stellar Arena is designed to validate whether players return for fast social matches, rather than speculative reward loops. Track queue conversion, match completion, repeat play, ability selections, and wallet-connect conversion before expanding tokenized rewards.
+
+done
