@@ -1,0 +1,15 @@
+# Local dependencies and build output are recreated by Vercel.
+node_modules
+.venv
+dist
+
+# The Soroban build is needed only by the GitHub Actions deployment step.
+# Its Rust target directory can exceed Vercel's Python Function bundle limit.
+contracts/**/target
+contracts/**/test_snapshots
+
+# Repository metadata and local-only files.
+.git
+.github
+.env
+*.log
