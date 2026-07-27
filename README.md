@@ -16,6 +16,10 @@ An anime-inspired competitive space game for Stellar. Players collect Stellar Co
 
 https://cosmic-capture.vercel.app/
 
+## Demo Video Link
+
+https://drive.google.com/file/d/18Rhipfj-Pb_6D4Z8wlGOAw6p4aoKGeAJ/view?usp=sharing
+
 ## Admin Panel
 <img width="1896" height="922" alt="Screenshot 2026-07-27 183126" src="https://github.com/user-attachments/assets/efa17388-07c6-4bc3-8309-5f0e63674d22" />
 
