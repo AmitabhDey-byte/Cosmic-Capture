@@ -21,17 +21,17 @@ https://cosmic-capture.vercel.app/
 
 ## Screenshots of Product
 <img width="1917" height="968" alt="Screenshot 2026-07-27 182906" src="https://github.com/user-attachments/assets/eeda838b-240c-4182-8841-f917db210207" />
-<img width="1917" height="870" alt="Screenshot 2026-07-27 192318" src="https://github.com/user-attachments/assets/5aa6c47f-fb35-40bc-a07e-df78c7dc316d" /><img width="1886" height="862" alt="Screenshot 2026-07-27 183344" src="https://github.com/user-attachments/assets/e3add887-2243-44bf-823c-5c7a2dfc0843" />
+<img width="1917" height="870" alt="Screenshot 2026-07-27 192318" src="https://github.com/user-attachments/assets/5aa6c47f-fb35-40bc-a07e-df78c7dc316d" />
 <img width="1916" height="872" alt="Screenshot 2026-07-27 183301" src="https://github.com/user-attachments/assets/12f7d242-a16a-44b5-80d7-904a14c986a0" />
 <img width="1916" height="872" alt="Screenshot 2026-07-27 183241" src="https://github.com/user-attachments/assets/3743e453-bed3-486c-8e88-aa65379c506b" />
 <img width="1917" height="870" alt="Screenshot 2026-07-27 192318" src="https://github.com/user-attachments/assets/1558069c-c63e-427d-a5d3-6d866032e1e0" />
 
 ## Mobile Responsive 
 
-<img width="720" height="1600" alt="WhatsApp Image 2026-07-27 at 6 35 43 PM" src="https://github.com/user-attachments/assets/e3d6d465-09fa-4b49-acb1-0187b4b7d331" />
-<img width="720" height="1600" alt="WhatsApp Image 2026-07-27 at 6 35 43 PM (2)" src="https://github.com/user-attachments/assets/e62205bb-56e3-4593-b2e7-c2aa9d24b662" />
-<img width="720" height="1600" alt="WhatsApp Image 2026-07-27 at 6 35 43 PM (1)" src="https://github.com/user-attachments/assets/52811aaa-d889-4a1a-9520-22a594952ae8" />
-<img width="720" height="1600" alt="WhatsApp Image 2026-07-27 at 6 35 44 PM" src="https://github.com/user-attachments/assets/56474cf1-26c9-4fbf-ad8f-2002349ef652" />
+<img width="300" height="800" alt="WhatsApp Image 2026-07-27 at 6 35 43 PM" src="https://github.com/user-attachments/assets/e3d6d465-09fa-4b49-acb1-0187b4b7d331" />
+<img width="300" height="800" alt="WhatsApp Image 2026-07-27 at 6 35 43 PM (2)" src="https://github.com/user-attachments/assets/e62205bb-56e3-4593-b2e7-c2aa9d24b662" />
+<img width="300" height="800" alt="WhatsApp Image 2026-07-27 at 6 35 43 PM (1)" src="https://github.com/user-attachments/assets/52811aaa-d889-4a1a-9520-22a594952ae8" />
+<img width="300" height="800" alt="WhatsApp Image 2026-07-27 at 6 35 44 PM" src="https://github.com/user-attachments/assets/56474cf1-26c9-4fbf-ad8f-2002349ef652" />
 
 
 ## Architecture
