@@ -64,7 +64,7 @@ Set `GEMINI_API_KEY` in `.env` to make Kira use Gemini through the API. The key 
 | Variable | Location | Purpose |
 | --- | --- | --- |
 | `VITE_GAME_API_URL` | frontend | Optional API origin for local development. Leave empty on Vercel to use the same-origin FastAPI Function at `/api`. |
-| `VITE_SOROBAN_CONTRACT_ID` | frontend | Testnet contract address after deployment. |
+| `VITE_SOROBAN_CONTRACT_ID` | frontend | Stellar Testnet contract ID: `CAO4CV3MMQLN463GVYVHC4H4E3AOUIZLJFXGQULNDLAYFKQIDTFHORE4`. |
 | `VITE_SENTRY_DSN` | frontend | Optional browser error tracking. |
 | `VITE_POSTHOG_KEY` | frontend | Optional product analytics. |
 | `VITE_POSTHOG_HOST` | frontend | PostHog region endpoint. |
@@ -111,6 +111,11 @@ Both flows ask the player to approve access in their wallet. The app only retain
 
 ## Soroban contract MVP
 
+### Deployed contract
+
+- **Network:** Stellar Testnet
+- **Contract ID:** `CAO4CV3MMQLN463GVYVHC4H4E3AOUIZLJFXGQULNDLAYFKQIDTFHORE4`
+
 The contract source is at [`contracts/stellar-arena/src/lib.rs`](contracts/stellar-arena/src/lib.rs). It supports:
 
 1. Admin initialization.
@@ -141,7 +146,7 @@ To deploy, compile with the Soroban-compatible `wasm32v1-none` target, use the S
 - [x] Sentry and PostHog integration points.
 - [x] CI and deployment workflow templates.
 - [ ] Deploy the game API + WebSocket server and implement server-side anti-cheat.
-- [ ] Deploy the contract to Testnet; add the address to deployment environment variables.
+- [x] Deploy the contract to Stellar Testnet and add its address to deployment environment variables.
 - [ ] Configure Sentry/PostHog project keys and capture screenshots for the review package.
 - [ ] Onboard ten real Testnet players and save their consented wallet-interaction evidence.
 - [ ] Publish a live demo and record the requested walkthrough video.
