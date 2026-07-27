@@ -21,12 +21,11 @@ https://cosmic-capture.vercel.app/
 https://drive.google.com/file/d/18Rhipfj-Pb_6D4Z8wlGOAw6p4aoKGeAJ/view?usp=sharing
 
 ## Admin Panel
-<img width="1896" height="922" alt="Screenshot 2026-07-27 183126" src="https://github.com/user-attachments/assets/efa17388-07c6-4bc3-8309-5f0e63674d22" />
+<img width="1917" height="968" alt="Screenshot 2026-07-27 182906" src="https://github.com/user-attachments/assets/eeda838b-240c-4182-8841-f917db210207" />
 
 ## Screenshots of Product
-<img width="1917" height="968" alt="Screenshot 2026-07-27 182906" src="https://github.com/user-attachments/assets/eeda838b-240c-4182-8841-f917db210207" />
+<img width="1896" height="922" alt="Screenshot 2026-07-27 183126" src="https://github.com/user-attachments/assets/efa17388-07c6-4bc3-8309-5f0e63674d22" />
 <img width="1917" height="870" alt="Screenshot 2026-07-27 192318" src="https://github.com/user-attachments/assets/5aa6c47f-fb35-40bc-a07e-df78c7dc316d" />
-<img width="1916" height="872" alt="Screenshot 2026-07-27 183301" src="https://github.com/user-attachments/assets/12f7d242-a16a-44b5-80d7-904a14c986a0" />
 <img width="1916" height="872" alt="Screenshot 2026-07-27 183241" src="https://github.com/user-attachments/assets/3743e453-bed3-486c-8e88-aa65379c506b" />
 <img width="1917" height="870" alt="Screenshot 2026-07-27 192318" src="https://github.com/user-attachments/assets/1558069c-c63e-427d-a5d3-6d866032e1e0" />
 
