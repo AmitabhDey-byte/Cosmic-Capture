@@ -3,6 +3,11 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.py": {
+      "excludeFiles": "{.venv/**,node_modules/**,dist/**,src/**,public/**,contracts/**,db/**,server/**,.github/**,.vercel/**,backend/scripts/**,**/__pycache__/**,**/*.pyc}"
+    }
+  },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/index.py" },
     { "handle": "filesystem" },
