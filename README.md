@@ -49,6 +49,32 @@ flowchart LR
 
 Gameplay is intentionally off-chain: movement, collisions, core spawns, and abilities need sub-second response. The server produces a signed/verified final result; only that compact outcome is committed with Soroban.
 
+## Users onboarded
+
+| Timestamp | Name | Email | Stellar wallet address | Rating | Feedback |
+| --- | --- | --- | --- | ---: | --- |
+| 7/27/2026 0:01:22 | seyit ali değirmen | degirmenseyit@gmail.com | `GDOCMYNNTH62NW37IZCN6BKQTM5Z73RW7OOFXRADLYXUABDN3UXWDTNC` | 5 | Great job, I really liked it. The chess game I noticed at the very end added a nice touch, too. |
+| 7/27/2026 0:36:45 | Subhadip Dutta | subhadipduttasubha@gmail.com | `GAVNLCS3GSWLKXSLZ3ITSL7QNB5IGHEOELXAF6QTYACDLEJ7XRQKBBNO` | 5 | Great user interface and smooth experience. The game runs smoothly without issues. |
+| 7/27/2026 0:43:16 | Sandipan Singh | alt@sandipansingh.com | `GDYIHXTUKLCPZHWGGD5B5ZPJZINZ3WUNC3PJCDAYEB4XY4LT2XNTQHTX` | 5 | Cool Game!!!! |
+| 7/27/2026 13:27:50 | Pritam Mondal | proumg2@gmail.com | `GAEAB4UWRUODGUKBYGDXBZULSOI3HJ6HQKJNNLTY66IF3ATXMRYUCSNX` | 4 | WELL FANTASTIC INSANE |
+| 7/27/2026 13:30:21 | RITESH GUPTA | kingofpirates451@gmail.com | `GDFSDPEEBZYQVG5JPPTJUOH4FID4M5XV45BKTWCIEIRYMCWJ6DQADBMB` | 3 | `53d222129692157e20e1e7d3b368c44a132b5ec61f6a85f3a7e9626e0613d934` — transaction bhi kiya hu 😂😂 |
+| 7/27/2026 13:31:07 | Ankita | poulumidui@gmail.com | `GCV5X5CKYUAPQLE3OYQS3PDXKX4TRV767YUCJ66PWWGZD2BXE744T276` | 4 | Well played |
+| 7/27/2026 13:32:11 | Papita | poppritu@gmail.com | `GACMLTEWZ23NGJ5WZ2THYGLODFYTEKECB7J2U33H3DCSW2PEAQUEIZED` | 5 | UIUX IS AWESOME |
+| 7/27/2026 13:37:17 | Rishi Dey | dramitabh101dey@gmail.com | `GBO7BZSNAX6APJW32OE5LHXQZ6MTIHBTWRZZRCJL3VSILWCAZLGCPM4T` | 5 | very good ui and gameplay |
+| 7/27/2026 13:49:02 | Amitabh Dey | amitabhdey101@gmail.com | `GBKYHWSL2MNUO73HWY6KWNOA64AKSUENCOBTR56M66HNLMMKMZHK5OAS` | 5 | its nice but the game still need some improvement |
+| 7/27/2026 16:49:06 | taro | lucasdory05@gmail.com | `GDNLCRNGYZNS7TQ4K5TPPH7LAIXMPXTLR6GN46VFBJLBKC6DFS24JFAU` | 4 | overall experience pretty smooth. nice work |
+| 7/27/2026 17:13:41 | Ankush Shaw | ankushshaw764@gmail.com | `GBBIG4HLPGTLG6BH6YREVWJXEQ4NX74HTD444JD6A6XYS7DOFL2J6DEI` | 5 | really good |
+| 7/27/2026 19:34:53 | Nitin Raj | rajnitin793@gmail.com | `GARRE4DTEUJIQSXRACCL6X55RH42S7WBO32F5HB4DU32MT6IL5TL3B3N` | 5 | great work on ui, overall experience is great!! |
+| 7/27/2026 19:44:48 | Arijit Debnath | arijitdebnath008@gmail.com | `GDBHMNAQ5CRSNNSHIVJRM3OGMIX3TS3VR2J5SHFUKPGDZDCMBXAVMONK` | 5 | Bolbo na |
+
+## User data spreadsheet
+
+[Open the user data spreadsheet](https://docs.google.com/spreadsheets/d/1ZZj4TlG5uyUBylbOUT6-azJKUIOxFSF_c-opmwFxoGE/edit?usp=sharing)
+
+## Feedback form link
+
+[Open the feedback form](https://forms.gle/JogZinMtuEdXZvK7A)
+
 ## Current playable arena
 
 The **Play** route is a 90-second Canvas arena, not a mock-up. Pilot the supplied Sora interceptor with **WASD / arrow keys**, aim with a mouse or touch, and press/hold **Space** or the pointer to fire. Capture luminous Stellar Cores for points, take down rival scouts, and finish above the board to earn a Testnet result. Arena entry requires a connected Freighter or Albedo wallet plus a callsign and age (13+); the prologue, crew files, hangar, shop preview, and arcade remain public. A completed run is sent to FastAPI, which stores the public wallet, profile, match, and Stellar transaction hashes in PostgreSQL.
