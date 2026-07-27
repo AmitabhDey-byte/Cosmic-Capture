@@ -1,9 +1,6 @@
 # Stellar Arena: Cosmic Capture
 
 An anime-inspired competitive space game for Stellar. Players collect Stellar Cores, activate tactical abilities, avoid the shrinking void, and build a persistent pilot identity without putting real-time movement on-chain.
-
-![Stellar Arena hero](public/art/cosmic-arena.png)
-
 ## What is in this MVP
 
 - Manga-panel responsive React experience with a generated cosmic key visual, Kyoto orbit, neon city, and winter arena styling.
