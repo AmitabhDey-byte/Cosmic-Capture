@@ -49,6 +49,6 @@ jobs:
         with:
           # soroban-sdk 27 requires Rust 1.84+ and the constrained WASM target.
           targets: wasm32v1-none
-      - run: cargo fmt --manifest-path contracts/stellar-arena/Cargo.toml -- --check
-      - run: cargo test --manifest-path contracts/stellar-arena/Cargo.toml
-      - run: cargo build --manifest-path contracts/stellar-arena/Cargo.toml --target wasm32v1-none --release
+      - run: npm run contracts:format
+      - run: npm run contracts:test
+      - run: npm run contracts:build

@@ -78,3 +78,17 @@ export async function fetchOwnedPowerups(walletAddress: string): Promise<string[
   const payload = await response.json() as { powerups?: { powerup_id?: string }[] }
   return payload.powerups?.map((powerup) => powerup.powerup_id).filter((id): id is string => Boolean(id)) || []
 }
+
+export type LeaderboardEntry = {
+  display_name: string
+  avatar_key: string
+  cores: number
+  matches: number
+}
+
+export async function fetchLeaderboard(): Promise<LeaderboardEntry[]> {
+  const response = await fetch(gameApiBase + '/api/leaderboard')
+  if (!response.ok) throw new Error('Leaderboard request failed: ' + response.status)
+  const payload = await response.json() as { leaderboard?: LeaderboardEntry[] }
+  return payload.leaderboard || []
+}

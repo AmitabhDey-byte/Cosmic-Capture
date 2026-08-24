@@ -10,6 +10,9 @@
     "dev:full": "concurrently \"npm run dev\" \"npm run api\"",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "contracts:format": "cargo fmt --manifest-path contracts/stellar-arena/Cargo.toml -- --check",
+    "contracts:test": "cargo test --manifest-path contracts/stellar-arena/Cargo.toml",
+    "contracts:build": "cargo build --manifest-path contracts/stellar-arena/Cargo.toml --target wasm32v1-none --release",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -6,11 +6,12 @@ import {
   Swords, Target, Trophy, Users, Wallet, X, Zap,
 } from 'lucide-react'
 import { connectAlbedo, connectFreighter, type WalletSession } from './lib/wallets'
-import { claimTestnetWinXlm, fetchAdminDashboard, fetchDuoQueue, fetchOwnedPowerups, fetchPlayerProfile, gameApiBase, joinDuoQueue, leaveDuoQueue, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase, type AdminDashboard, type DuoQueueStatus } from './lib/api'
+import { claimTestnetWinXlm, fetchAdminDashboard, fetchDuoQueue, fetchLeaderboard, fetchOwnedPowerups, fetchPlayerProfile, gameApiBase, joinDuoQueue, leaveDuoQueue, persistLocalMatch, persistPlayer, persistStellarTransaction, verifyPowerupPurchase, type AdminDashboard, type DuoQueueStatus, type LeaderboardEntry } from './lib/api'
 import { track } from './lib/observability'
 import type { ArenaRun } from './game/StellarArena'
 import { configuredAstraAsset, configuredPowerupTreasury, createAstraTrustline, purchasePowerupWithXlm } from './lib/testnetCurrency'
 import { powerupById, powerups, type Powerup, type PowerupId } from './lib/powerups'
+import { FeedbackDesk } from './components/FeedbackDesk'
 import './App.css'
 
 const StellarArena = lazy(() => import('./game/StellarArena').then(({ StellarArena: Arena }) => ({ default: Arena })))
@@ -45,14 +46,6 @@ const abilities = [
   { name: 'Aegis Bloom', icon: Shield, cool: '14s', copy: 'A star-petal shield that absorbs the next impact.', color: 'cyan' },
   { name: 'Blink Shift', icon: Zap, cool: '11s', copy: 'Teleport through a rift and leave a false trail.', color: 'pink' },
   { name: 'EMP Bloom', icon: Radar, cool: '18s', copy: 'Silence enemy gadgets in a solar shockwave.', color: 'gold' },
-]
-
-const rankings = [
-  ['NOVA KITSUNE', '12,840', '47 WINS', 'N'],
-  ['KIRA BYTE', '12,220', '44 WINS', 'K'],
-  ['POLARIS', '11,960', '42 WINS', 'P'],
-  ['YOU / SORA', '11,340', '39 WINS', 'S'],
-  ['MISO COMET', '10,880', '36 WINS', 'M'],
 ]
 
 const chapterCards = [
@@ -329,7 +322,7 @@ function App() {
         {page === 'crew' && <CrewPage go={go} showNotice={showNotice} />}
         {page === 'arcade' && <ArcadePage />}
         {page === 'leaderboard' && <LeaderboardPage />}
-        {page === 'profile' && <ProfilePage wallet={wallet} setWalletModal={setWalletModal} showNotice={showNotice} displayName={displayName} setDisplayName={setDisplayName} savePilotIdentity={savePilotIdentity} />}
+        {page === 'profile' && <><ProfilePage wallet={wallet} setWalletModal={setWalletModal} showNotice={showNotice} displayName={displayName} setDisplayName={setDisplayName} savePilotIdentity={savePilotIdentity} /><FeedbackDesk walletAddress={wallet?.address} /></>}
         {page === 'admin' && <AdminPage />}
         {page === 'lore' && <LorePage go={go} />}
       </main>
@@ -518,7 +511,57 @@ function ArcadePage() { return <section className="arcade-page section-wrap"><di
 
 function GameSurfaceLoading({ label }: { label: string }) { return <div className="game-surface-loading" role="status"><span />{label}...</div> }
 
-function LeaderboardPage() { return <section className="leaderboard-page section-wrap"><div className="page-intro"><span className="eyebrow"><span /> SEASON 01 / NEON CUP</span><h1>The sky remembers<br /><i>the brave.</i></h1><p>Ranked by verified match results. Last refresh: just now.</p></div><div className="rank-layout"><div className="rank-list comic-panel"><div className="rank-header"><span>RANK / PILOT</span><span>CORE SCORE</span><span>FORM</span></div>{rankings.map((r, i) => <article className={i === 3 ? 'your-rank' : ''} key={r[0]}><b className="rank-num">0{i + 1}</b><span className={`rank-avatar av-${i}`}>{r[3]}</span><div><h3>{r[0]}</h3><small>{r[2]}</small></div><strong>{r[1]}</strong><span className="rank-trend">↗ {12 - i * 2}</span></article>)}</div><aside className="season-card"><div><Crown /><span>SEASON ENDS IN</span><b>12D 04H</b></div><h3>Reach Astral rank</h3><p>Top 100 receive the limited Comet Crest badge on Stellar Testnet.</p><div className="rank-meter"><span style={{ width: '62%' }} /></div><small>11,340 / 18,000 RP</small><button>View season rules <ChevronRight size={15} /></button></aside></div></section> }
+function LeaderboardPage() {
+  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [refreshedAt, setRefreshedAt] = useState<Date | null>(null)
+
+  const refresh = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      setEntries(await fetchLeaderboard())
+      setRefreshedAt(new Date())
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Could not reach the arena registry.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { void refresh() }, [])
+
+  return <section className="leaderboard-page section-wrap">
+    <div className="page-intro">
+      <span className="eyebrow"><span /> LIVE / NEON CUP REGISTRY</span>
+      <h1>The sky remembers<br /><i>the brave.</i></h1>
+      <p>Ranked from verified match records in the live arena database{refreshedAt ? ' · refreshed ' + refreshedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '.'}</p>
+    </div>
+    <div className="rank-layout">
+      <div className="rank-list comic-panel">
+        <div className="rank-header"><span>RANK / PILOT</span><span>CORE SCORE</span><span>FORM</span></div>
+        {loading && <p className="rank-state">Kira is syncing the flight log…</p>}
+        {!loading && error && <div className="rank-state rank-error"><span>{error}</span><button onClick={() => void refresh()}>Retry sync</button></div>}
+        {!loading && !error && entries.length === 0 && <p className="rank-state">No verified flights yet. Be the first pilot to light the board.</p>}
+        {!loading && !error && entries.map((entry, index) => <article key={entry.display_name + '-' + index}>
+          <b className="rank-num">{String(index + 1).padStart(2, '0')}</b>
+          <span className={'rank-avatar av-' + (index % 5)}>{entry.avatar_key?.slice(0, 1).toUpperCase() || entry.display_name.slice(0, 1).toUpperCase()}</span>
+          <div><h3>{entry.display_name.toUpperCase()}</h3><small>{entry.matches} VERIFIED {entry.matches === 1 ? 'FLIGHT' : 'FLIGHTS'}</small></div>
+          <strong>{entry.cores.toLocaleString()}</strong><span className="rank-trend">LIVE</span>
+        </article>)}
+      </div>
+      <aside className="season-card">
+        <div><Crown /><span>NEON CUP / TESTNET</span><b>{entries.length} PILOTS</b></div>
+        <h3>Make the registry</h3>
+        <p>Connect a wallet, complete your pilot card, then finish a verified arena flight to appear here.</p>
+        <div className="rank-meter"><span style={{ width: Math.min(100, entries.length * 10) + '%' }} /></div>
+        <small>{entries.length} pilots recorded this season</small>
+        <button onClick={() => void refresh()} disabled={loading}>{loading ? 'Syncing…' : 'Refresh live board'} <ChevronRight size={15} /></button>
+      </aside>
+    </div>
+  </section>
+}
 
 function AdminPage() {
   const [token, setToken] = useState('')
