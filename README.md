@@ -16,6 +16,14 @@ An anime-inspired competitive space game for Stellar. Players collect Stellar Co
 
 https://cosmic-capture.vercel.app/
 
+## Current Stellar Testnet contract
+
+- **Contract ID:** [`CCPBQGLTWINIHUIAR3G77CIXLDRCRQJB6JGVCTPKVCKG3J25FIKO2XBK`](https://lab.stellar.org/r/testnet/contract/CCPBQGLTWINIHUIAR3G77CIXLDRCRQJB6JGVCTPKVCKG3J25FIKO2XBK)
+- **Admin public key:** `GAZGE6EWDULK436QWLCLI7PBZPGDY4FYPZQGX7R6PJDZHE6VWFD4DXAQ`
+- **Deployment transaction:** [`c8d02c578c0b7bb7c7a402185c1f9a8f07815f89f5bb101d936a08a5da05c9e4`](https://lab.stellar.org/transaction/c8d02c578c0b7bb7c7a402185c1f9a8f07815f89f5bb101d936a08a5da05c9e4?network=testnet)
+
+The contract was initialized on Testnet and its empty player profile was read back successfully. This is a testnet-only deployment: never send mainnet XLM or production secrets to it.
+
 ## Admin Panel
 <img width="1896" height="922" alt="Screenshot 2026-07-27 183126" src="https://github.com/user-attachments/assets/efa17388-07c6-4bc3-8309-5f0e63674d22" />
 
@@ -109,7 +117,7 @@ Set `GEMINI_API_KEY` in `.env` to make Kira use Gemini through the API. The key 
 | Variable | Location | Purpose |
 | --- | --- | --- |
 | `VITE_GAME_API_URL` | frontend | Optional API origin for local development. Leave empty on Vercel to use the same-origin FastAPI Function at `/api`. |
-| `VITE_SOROBAN_CONTRACT_ID` | frontend | Stellar Testnet contract ID: `CAO4CV3MMQLN463GVYVHC4H4E3AOUIZLJFXGQULNDLAYFKQIDTFHORE4`. |
+| `VITE_SOROBAN_CONTRACT_ID` | frontend | Stellar Testnet contract ID: `CCPBQGLTWINIHUIAR3G77CIXLDRCRQJB6JGVCTPKVCKG3J25FIKO2XBK`. |
 | `VITE_SENTRY_DSN` | frontend | Optional browser error tracking. |
 | `VITE_POSTHOG_KEY` | frontend | Optional product analytics. |
 | `VITE_POSTHOG_HOST` | frontend | PostHog region endpoint. |
@@ -159,7 +167,7 @@ Both flows ask the player to approve access in their wallet. The app only retain
 ### Deployed contract
 
 - **Network:** Stellar Testnet
-- **Contract ID:** `CAO4CV3MMQLN463GVYVHC4H4E3AOUIZLJFXGQULNDLAYFKQIDTFHORE4`
+- **Contract ID:** [`CCPBQGLTWINIHUIAR3G77CIXLDRCRQJB6JGVCTPKVCKG3J25FIKO2XBK`](https://lab.stellar.org/r/testnet/contract/CCPBQGLTWINIHUIAR3G77CIXLDRCRQJB6JGVCTPKVCKG3J25FIKO2XBK)
 
 The contract source is at [`contracts/stellar-arena/src/lib.rs`](contracts/stellar-arena/src/lib.rs). It supports:
 
