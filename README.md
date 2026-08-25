@@ -113,6 +113,9 @@ Set `GEMINI_API_KEY` in `.env` to make Kira use Gemini through the API. The key 
 | `VITE_POSTHOG_KEY` | frontend | Optional product analytics. |
 | `VITE_POSTHOG_HOST` | frontend | PostHog region endpoint. |
 | `VITE_HANGAR_MODEL_URL` | frontend | Public HTTPS URL to a `.glb` asset generated/exported through To3D. Optional. |
+| `VITE_STELLAR_HORIZON_URL` | frontend | HTTPS Stellar Testnet Horizon origin, normally `https://horizon-testnet.stellar.org`. Do not append `/api`. |
+| `VITE_GAME_ASSET_CODE` | frontend | `ASTRA`. |
+| `VITE_GAME_ASSET_ISSUER` | frontend | Project ASTRA Testnet issuer: `GDTHHFGEJKUXSKMFX6HRIDF7S7FN5CSIUFXU7T6K4UOFV7KI5DAT6UJN`. |
 | `VITE_POWERUP_TREASURY_ADDRESS` | frontend | Public Stellar Testnet account that receives native-XLM power-up payments. |
 | `DATABASE_URL` | server only | PostgreSQL connection URL. Required for the game API. |
 | `DATABASE_SSL` | server only | Set `true` for managed Postgres that requires TLS. |
@@ -123,6 +126,8 @@ Set `GEMINI_API_KEY` in `.env` to make Kira use Gemini through the API. The key 
 | `CLIENT_ORIGIN` | server only | CORS allow-list origin. |
 | `PORT` | server only | FastAPI service port, defaults to `3001`. |
 | `SOROBAN_RPC_URL` | server only | Stellar Testnet Soroban RPC endpoint used by the result verifier. |
+| `STELLAR_GAME_ASSET_ISSUER` | server only | Must match the public ASTRA issuer configured in `VITE_GAME_ASSET_ISSUER`. |
+| `STELLAR_REWARD_ISSUER_SECRET` | server only | Private secret for that same funded ASTRA issuer. Never expose it as `VITE_*`. |
 | `RESULT_VERIFIER_SECRET` | server only | Secret for the backend-only result-verifier Stellar account. Never commit or prefix with `VITE_`. |
 | `ADMIN_ACCESS_TOKEN` | server only | Long random bearer token required by the in-app **Ops** dashboard. It is never sent unless you unlock that dashboard. |
 | `STELLAR_POWERUP_TREASURY_ADDRESS` | server only | Must match the public checkout destination; FastAPI verifies XLM payments to this address before granting a power-up. |

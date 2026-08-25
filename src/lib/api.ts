@@ -1,4 +1,21 @@
-export const gameApiBase = import.meta.env.VITE_GAME_API_URL?.replace(/\/$/, '') || ''
+function resolveGameApiBase(value: string | undefined) {
+  const configured = value?.trim()
+  if (!configured) return ''
+  try {
+    const url = new URL(configured)
+    const isBrowser = typeof window !== 'undefined'
+    const livePage = isBrowser && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
+    if (livePage && (url.protocol !== 'https:' || url.hostname === 'localhost' || url.hostname === '127.0.0.1')) return ''
+    const path = url.pathname.replace(/\/+$/, '').replace(/\/api$/, '')
+    return url.origin + (path && path !== '/' ? path : '')
+  } catch {
+    return ''
+  }
+}
+
+// Callers already include /api. This accepts either an origin or a mistakenly
+// configured origin/api and falls back to same-origin on malformed live URLs.
+export const gameApiBase = resolveGameApiBase(import.meta.env.VITE_GAME_API_URL)
 
 type PlayerPayload = { walletAddress: string; displayName: string; age?: number; walletProvider: string; avatarKey?: string }
 
