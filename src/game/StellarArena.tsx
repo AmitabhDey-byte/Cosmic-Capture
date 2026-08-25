@@ -628,22 +628,29 @@ export const StellarArena: React.FC<Props> = ({ mode: initialMode, walletConnect
         lastShotRef.current = state.elapsedTime;
       }
 
-      /* --- Bot AI: chase nearest hostile ship to shoot, else pathfind to nearest core --- */
+      /* --- Bot AI: Solo rivals hunt the player; Duo rivals use team targeting. --- */
       const combatants = getCombatants(state);
       state.bots.forEach((bot) => {
         if (bot.health <= 0) return;
 
-        // Find nearest hostile target within vision range.
-        let nearestEnemy: Combatant | null = null;
-        let nearestEnemyDist = Infinity;
-        combatants.forEach((c) => {
-          if (!isHostile(state.mode, bot.team, bot.id, c.team, c.id)) return;
-          const d = distance(bot.x, bot.y, c.x, c.y);
-          if (d < nearestEnemyDist) {
-            nearestEnemyDist = d;
-            nearestEnemy = c;
-          }
-        });
+        // Solo is a player-vs-rivals encounter, not bot-vs-bot FFA. This keeps
+        // every hostile jet focused on the pilot instead of destroying peers.
+        let nearestEnemy: Combatant | null =
+          state.mode === 'solo'
+            ? { id: player.id, x: player.x, y: player.y, radius: player.radius, team: player.team, isPlayer: true }
+            : null;
+        let nearestEnemyDist =
+          nearestEnemy ? distance(bot.x, bot.y, player.x, player.y) : Infinity;
+        if (state.mode !== 'solo') {
+          combatants.forEach((c) => {
+            if (!isHostile(state.mode, bot.team, bot.id, c.team, c.id)) return;
+            const d = distance(bot.x, bot.y, c.x, c.y);
+            if (d < nearestEnemyDist) {
+              nearestEnemyDist = d;
+              nearestEnemy = c;
+            }
+          });
+        }
 
         // Find nearest stellar core.
         let nearestCore: Core | null = null;
@@ -737,6 +744,9 @@ export const StellarArena: React.FC<Props> = ({ mode: initialMode, walletConnect
 
         for (const bot of state.bots) {
           if (bot.health <= 0) continue;
+          // In Solo, hostile shots are reserved for the player. Rival ships do
+          // not erase one another before the pilot gets a real dogfight.
+          if (state.mode === 'solo' && p.ownerId !== player.id) continue;
           if (!isHostile(state.mode, p.team, p.ownerId, bot.team, bot.id)) continue;
           if (distance(p.x, p.y, bot.x, bot.y) <= p.radius + bot.radius) {
             bot.health -= p.damage;
