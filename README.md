@@ -16,6 +16,10 @@ An anime-inspired competitive space game for Stellar. Players collect Stellar Co
 
 https://cosmic-capture.vercel.app/
 
+## Pitch Deck / PPT
+
+[Open the Stellar Arena pitch deck](https://docs.google.com/presentation/d/1RsyxEQOd4zu_VGgRSEI8FrMnVwZjv0lg/edit?usp=sharing&ouid=111294959728581501547&rtpof=true&sd=true)
+
 ## Admin Panel
 <img width="1917" height="968" alt="Screenshot 2026-07-27 182906" src="https://github.com/user-attachments/assets/eeda838b-240c-4182-8841-f917db210207" />
 
