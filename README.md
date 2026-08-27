@@ -19,6 +19,11 @@ https://cosmic-capture.vercel.app/
 ## Admin Panel
 <img width="1917" height="968" alt="Screenshot 2026-07-27 182906" src="https://github.com/user-attachments/assets/eeda838b-240c-4182-8841-f917db210207" />
 
+<img alt="Stellar command console overview" src="public/readme/admin-panel/admin-overview.png" />
+<img alt="Admin panel pilot records" src="public/readme/admin-panel/admin-pilots-1.png" />
+<img alt="Admin panel pilot records, continued" src="public/readme/admin-panel/admin-pilots-2.png" />
+<img alt="Admin panel transaction records" src="public/readme/admin-panel/admin-transactions.png" />
+
 ## Screenshots of Product
 <img width="1896" height="922" alt="Screenshot 2026-07-27 183126" src="https://github.com/user-attachments/assets/efa17388-07c6-4bc3-8309-5f0e63674d22" />
 <img width="1917" height="870" alt="Screenshot 2026-07-27 192318" src="https://github.com/user-attachments/assets/5aa6c47f-fb35-40bc-a07e-df78c7dc316d" />
