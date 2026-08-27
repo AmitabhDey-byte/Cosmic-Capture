@@ -50,8 +50,8 @@ Gameplay is intentionally off-chain: movement, collisions, core spawns, and abil
 
 ## Users onboarded
 
-| Timestamp | Name | Email | Stellar wallet address | Rating | Feedback |
-| --- | --- | --- | --- | ---: | --- |
+| Timestamp | Name | Email | Stellar wallet address | Rating | Feedback | Transaction hash |
+| --- | --- | --- | --- | ---: | --- | --- |
 | 7/27/2026 0:01:22 | seyit ali değirmen | degirmenseyit@gmail.com | `GDOCMYNNTH62NW37IZCN6BKQTM5Z73RW7OOFXRADLYXUABDN3UXWDTNC` | 5 | Great job, I really liked it. The chess game I noticed at the very end added a nice touch, too. |
 | 7/27/2026 0:36:45 | Subhadip Dutta | subhadipduttasubha@gmail.com | `GAVNLCS3GSWLKXSLZ3ITSL7QNB5IGHEOELXAF6QTYACDLEJ7XRQKBBNO` | 5 | Great user interface and smooth experience. The game runs smoothly without issues. |
 | 7/27/2026 0:43:16 | Sandipan Singh | alt@sandipansingh.com | `GDYIHXTUKLCPZHWGGD5B5ZPJZINZ3WUNC3PJCDAYEB4XY4LT2XNTQHTX` | 5 | Cool Game!!!! |
@@ -64,7 +64,58 @@ Gameplay is intentionally off-chain: movement, collisions, core spawns, and abil
 | 7/27/2026 16:49:06 | taro | lucasdory05@gmail.com | `GDNLCRNGYZNS7TQ4K5TPPH7LAIXMPXTLR6GN46VFBJLBKC6DFS24JFAU` | 4 | overall experience pretty smooth. nice work |
 | 7/27/2026 17:13:41 | Ankush Shaw | ankushshaw764@gmail.com | `GBBIG4HLPGTLG6BH6YREVWJXEQ4NX74HTD444JD6A6XYS7DOFL2J6DEI` | 5 | really good |
 | 7/27/2026 19:34:53 | Nitin Raj | rajnitin793@gmail.com | `GARRE4DTEUJIQSXRACCL6X55RH42S7WBO32F5HB4DU32MT6IL5TL3B3N` | 5 | great work on ui, overall experience is great!! |
-| 7/27/2026 19:44:48 | Arijit Debnath | arijitdebnath008@gmail.com | `GDBHMNAQ5CRSNNSHIVJRM3OGMIX3TS3VR2J5SHFUKPGDZDCMBXAVMONK` | 5 | Bolbo na |
+| 7/27/2026 19:44:48 | Arijit Debnath | arijitdebnath008@gmail.com | `GDBHMNAQ5CRSNNSHIVJRM3OGMIX3TS3VR2J5SHFUKPGDZDCMBXAVMONK` | 5 | Bolbo na | |
+| 20/08/2026 0:03:51 | Arnav Mukherjee | arnav24mukherjee@gmail.com | `GCANO7NOW34S6GFEXABOX3DJ3UL2X5GR7HTZWXB2EZR5YO5TNFP7PAGY` | 4 | very good gameplay | `3d448d35e76dbcd482ff06190264ec33efd74f08e92ef5a05902614d145b5c3f` |
+| 20/08/2026 4:00:47 | Shreya Sharma | shreyasharma582@gmail.com | `GD3WWKXWNBGHSK5LSF5GZ4CSXZIW7PPVS7WXQNBFI4PKQWDCSO6G7UBR` | 3 | great ui | `f914fe3d42d23b777358a206ff384faba38112790a3cd5b2281c3ed9e426188b` |
+| 20/08/2026 4:39:48 | Bikram Sengupta | bikram91sengupta@gmail.com | `GACIMBDINSRQ3RALE3CU7AQR2E5BLDOPIEJKDBEBQFWHN4YYVVXGSAWE` | 5 | uiux is great | `e13e6fe60a82c6938f5372faac34e99a3327fe7fd29908ae17b210d90922f52a` |
+| 20/08/2026 6:14:33 | Pooja Rathore | poojarathore149@gmail.com | `GAKTHD2N7UIHKXJYTF5SEYDPO2S2IOCADDZAWPPNB7MYIHUOP2PCPKDL` | 5 | nice game | `6101fec71c40a3836fc3f0f966bc3f9b3a5950ef45fa9b68bab23e6bc5bf26bd` |
+| 20/08/2026 7:05:20 | Anirban Ganguly | anirban73ganguly@gmail.com | `GDNPJ6V7EF7QA6BADIJFCB7YOLR7S6FX2RWMBOLIDVYY65D5GVSOH6PJ` | 4 | bhalooo! | `7cdf3addcd0f88d7c8ff1e3cc7dbf1c79be2a0865891726e224433f2a1f3dd52` |
+| 20/08/2026 9:28:23 | Sneha Kapoor | snehakapoor831@gmail.com | `GCCPT6NNSO22Z34MQ2JGHT3OLXJNCKE5CECEF3HIPENRRYFQGZGSSGIR` | 4 | awesome ui | `338536ad080e7b839c08f44de1242e8a96afd55ea6e7f2ea5e7c62b0c22a9ac0` |
+| 20/08/2026 14:18:22 | Debjani Dasgupta | debjanidasgupta812@gmail.com | `GAMW5NO57DH3XTT27TGU2Q5CKLC5F6V3VKGEAPR7PCR2TSACSHS5GRD6` | 4 | nice game, I really liked it. | `a32fd4bca3d6a8c3368878eeef1583a462916194d824643ebb4365bcf2c316bc` |
+| 21/08/2026 0:57:10 | Rohan Verma | rohanverma45@gmail.com | `GB7DORZBX2O2T24LJ3IB5MJYGVSJPSYXDXXZF5ATZQMSNWTKZIXTZWAZ` | 5 | Great job, I really liked it. The chess game added a nice touch. | `a9ba1307ef065740c36b637d55382c957df63836ed9dd80c26835bb929e147a1` |
+| 21/08/2026 3:15:56 | Tanmoy Bhowmick | tanmoy619bhowmick@gmail.com | `GBD7LYZ6YLGKZVMXKGW47JCLPURFKIRPNADY62L27RJLQYMNAZWTTWGF` | 5 | darun.. | `0f0cfc56b39db278e2df6e12f069684626a0aa021aff31c73844171921cd1b54` |
+| 21/08/2026 3:58:25 | Ananya Rastogi | ananyarastogi37@gmail.com | `GDQRPZHEKXQIPTZGYEGUMFYCVOJD7ZDDLUFRZ6KAA4JAHAS6WMC5OBJX` | 4 | nice uiux brooo | `726bfd7afe0469feb9693ecd4be9d51f90c4d6b126aacb2fb4c2401c300209ef` |
+| 21/08/2026 5:58:38 | Swastika Banerjee | swastikabanerjee84@gmail.com | `GAUSQBPHNCPKK3KFSS2PACSJL74HBBZHE5IDV3FOATGB77RENC7SCZFZ` | 5 | pretty decent | `e78effbec51dd94b90f46f9a560b9ad20bf8d0ff5415a5a5cd5978dad2ae4bcc` |
+| 21/08/2026 11:03:25 | Siddharth Malhotra | siddharthmalhotra902@gmail.com | `GADMX6UFXMEFX4UVKLPVS6OBETIENSYOW6OXU6JB7ADOANJ2GOE42SZC` | 4 | good game. | `bb9a0c6182619f4c756aeb9eca37bf61ea72a16acc239129fcc5fdcc9aab6799` |
+| 21/08/2026 15:59:53 | Ritwik Ghoshal | ritwik15ghoshal@gmail.com | `GCJQLY77YBCGE4JEMLBOYVDRRK7A4Q37BHZ3JJI7ATSLMIGJKEQGMSZL` | 5 | bhalo game | `ce4023ef5b74d4ef32dc3e22656b38f752302c928ee30ce3050b211aa7212c2c` |
+| 21/08/2026 22:40:19 | Ishita Bhatia | ishitabhatia471@gmail.com | `GCD6NNP6253FZCA4J3EEVL7HV7EIJCBR4LMTWSW2GN7X72LCQUOJZ2QA` | 5 | Great user interface and smooth experience. | `6508348f9548ff1ea74a451dd5071788dabd6325771ca437ee385c86b6b8bb69` |
+| 08/2026-22 3:02:37 | Paramita Bose | paramitabose63@gmail.com | `GDMGQLDEINU6GGYNFYHEOBIXMWKUIGILDUKVOWDLXJ7RDKKQ3BOGRKUE` | 4 | awesome | `78a091b75200796f25c4d47cffc3479ca2f8af3054cd6cd2789f707168c2fdee` |
+| 08/2026-22 4:59:10 | Kunal Tyagi | kunaltyagi82@gmail.com | `GCE3CRR3YKS4DG7ALWRATH6MB4L5LBOJ6BMGRTRWUDFPBZA5D5PCXGYQ` | 4 | noice brother | `d742b9187ba61d2e1b4c7a153d5033b17ce460210e675836bf8e0972d470e728` |
+| 08/2026-22 9:43:32 | Tathagata Dutta | tathagatadutta504@gmail.com | `GA37VC34DNGTOYR2GJYZSZFRP74HXGGSJZLTY5W25WX3L5VEBG4QKML6` | 3 | really good | `85f04330fb96f74f38e8ef4ca3acaeeea9010af15689924c26e1311e0eb41c14` |
+| 08/2026-22 16:19:07 | Meenakshi Saxena | meenakshisaxena319@gmail.com | `GBNNDXKC6PGQL2CEAM47M6Y6NEL6A3UQZGZCT4Y3T6POX442M4PWRPBG` | 4 | damn good | `5ca2916ba0813b38d2bee6c7f1c65f14fe85761ac18af20958129041ad2bd2da` |
+| 08/2026-22 17:43:57 | Aparajita Sen | aparajitasen27@gmail.com | `GCBES64B7OLSL3T6WDJNUQG3AW5JAPJXA3DBXACXPVAJ4TPW24RQI32L` | 5 | great ui | `d83dba0bf70e5251b15da7dc6d5d879d0f0a1c60fee8098182daff88fbca770c` |
+| 08/2026-22 18:19:43 | Harshvardhan Singh | harshvardhansingh764@gmail.com | `GDFHYQBJ32IAXD4RTDX4STEGVT2LKPK4RQJWQ7ZBUCT5ERK7H7FZ3LVX` | 3 | nice game | `6de12c3a6dea7a95c32327741553ab59d311a9d590d531a87094b1c9b894e597` |
+| 08/2026-22 20:46:30 | Sourav Chakraborty | sourav48chakraborty@gmail.com | `GDTS6UM5OHKKQVWZQTCDUZTGAHXW6MPUFLXFR3HZZ5KJGSP7V4ENL42M` | 4 | t2y444u6yiuiiuyu6 | `a22501bd01e0e1f5155c0125f65224d89490eedae9be1154a61bda761d8f2bfb` |
+| 23/08/2026 1:28:17 | Sunaina Agarwal | sunaina823agarwal@gmail.com | `GAM676ZUJG3V2XBUJYKCKZROZHEJMQF5KZGHBWWHONL2SXJDTJST362H` | 5 | good game. | `fc5eba1aea9c79f030e303d629a6758c385eeb8fb11f00f5d7ce227670e29c6d` |
+| 23/08/2026 6:38:34 | Sudipto Roy | sudiptoroy159@gmail.com | `GBBXQ56T5OW4K45NYUSYZWSUHLKQDBMTL3UF7ZXGRUFAGUZD3OHBRQNC` | 5 | uiux is really great | `be87949cdc780e4e9f2fa4dfe4edb4a4a849c39c5d333e6bd414b340578ae319` |
+| 23/08/2026 7:35:31 | Kavya Chauhan | kavyachauhan74@gmail.com | `GDFCQOJCZ6KNW5CAARENV7YLQWY5ZY5QGPVTCUNZ6NOJYF7UFWAZBE5Z` | 4 | very good game | `e6c9bc26d060c9bfb2b2249f3186dec35dcbf8da7cfd9ba067c4847337427d2f` |
+| 23/08/2026 8:18:58 | Subhashish Mukhopadhyay | subhashish631mukhopadhyay@gmail.com | `GBDTRSDSLVBCIPCILWOAWKIOK4COYK2INU7COZMWI2TB54TCQGIML75B` | 5 | khub bhalo | `b201ee10515b1c2a4dc361251899d20784adcee9437f01dc54df42aca77cc587` |
+| 23/08/2026 9:01:39 | Radhika Joshi | radhikajoshi92@gmail.com | `GBZMGZX4INA6TG6R4A46VLWMGDZRRGJOV4V3EIRONHMZCUJUHZTPUFQY` | 5 | the app looks good but still needs improvement in the AI section | `4977db439093327a4f57a46731dacd430f87b64aa1b88a9bd1d77410d39ffb2e` |
+| 23/08/2026 10:02:16 | Trisha Pal | trisha418pal@gmail.com | `GDKZWRI3APYQ4YHGQWIAMU4QGF5XAJRGII6PICQREIKIGZXVEADLWXTE` | 4 | spaceships attacked one another instead of the player's ship | `34586d1fe6c0886c8105612d4edd7d8a1212db6796d7fad5f3d6571f5804d587` |
+| 23/08/2026 11:08:17 | Devendra Grover | devendragrover53@gmail.com | `GB6LEAB57B2ZPT57WFQXBMQ2ICUBG4W7IBDRLFZJMN3JU4KMR2PLHLO5` | 4 | the physics is bad | `dffca1b927b03b9e18c0c9e19dc0c46993f0f529784b2652a49ea84125779e58` |
+| 23/08/2026 12:34:57 UTC | Indranil Sarkar | indranil872sarkar@gmail.com | `GCAILDG257PP722UP2PTMIAI7EWECJSGJJBZS6QE5DB2GN4WHJXUCCUQ` | 5 | nice app; clean UI/UX; game needs to be better | `a7df49de9c891c8aa1b68730ab0ffba62b0235ec87795a1517ffd7c8dfaed3a3` |
+| 23/08/2026 13:46:35 | Priyanka Biswas | priyankabiswas29@gmail.com | `GAIUMMIWDBSNAK7S2PCRBQKGP5UG2OPWWAYBAYDXLBQQBLMA2ZMNWWWL` | 4 | change the prologue | `6d2ef5f1c3f99d8eacdd2214367dc9eceb6c56618a6ab20d5f9424c4d79f7093` |
+| 23/08/2026 19:58:21 | Shibaji Nandi | shibaji614nandi@gmail.com | `GBSGHZ3IYVSRTUZEYN3EBJKKLF4QXURXDYYQ2OV4UWOPMHXEN4FYK5N3` | 5 | kor bro kor chaliye jaa | `9d2ab69d4757bf77e870bd04226f40b08f689e52436c83ff3005bacb4e3efbed` |
+| 23/08/2026 21:00:05 | Rajeshwar Sharma | rajeshwarsharma81@gmail.com | `GB4VDNEYS25AAFTRL72LQKYHYMQICKN3OEW3LOYAVG5KSN4RHFMDTOPG` | 5 | good good | `cc10b9dd3386499571e0fb20cb20daeab895e1c79ac6ee33a2b758d4819ac4a9` |
+| 23/08/2026 22:17:24 | Arundhati Ghosh | arundhati735ghosh@gmail.com | `GB3NV4FTGI3WMY2GZ5GDVM4AEGAKAUOGPKR6O7PO6WCAGP5URLWX3INX` | 5 | no feedback provided | `31d9997d28b6a152f37a28b048dcd3534fa32576ca66c6aa7fbd2b50d7df436a` |
+| 24/08/2026 3:24:43 | Vikramaditya Rathore | vikramadityarathore42@gmail.com | `GDD4RPKVG4JTPJCLFKQ7SZFJDUMZ3VHMULYIYC3NSQ7P4UTTDRSVJQWJ` | 4 | nice gameplay | `eb9d580982bdea44b585739fd5b4ca850cb15aecc9669509ef9ca4038bfc1cf3` |
+| 24/08/2026 5:59:05 | Bodhisattva Mitra | bodhisattva903mitra@gmail.com | `GDFN3EZXSYNW6M6DE7Y4WOITEZ2ELNM4RAIZFXABJ2ML4XER5YJ3OTDU` | 5 | UI and assets are amazing | `7cc7a64d09c1dda75524ae04d76e03a55491b7a4c5c85c06c741b435658eaf4` |
+| 24/08/2026 13:00:37 | Raima Choudhury | raimachoudhury67@gmail.com | `GBMFEKIX77EBUKOTJJEBEDPV7CY6IXVN5NQF4EQN5DBLN7OZSKIXSM3H` | 5 | damn good | `7843460ec95b6f858b063eb9c2e4967b512fa2e7702b917912c0bba550e84fd1` |
+| 24/08/2026 13:08:20 | Aditya Verma | aditya382verma@gmail.com | `GB2KGLCFLTMYISMHF4WT7F32P5ZLWTC6KSZXMASPPWPCTPKLCLNEXNK3` | 4 | noice brother | `0a1ad7b2db0f1796c6b06146974bb61faa07369684b3a49f5632e533e697f75` |
+| 24/08/2026 14:29:11 | Madhurima Mullick | madhurimamullick51@gmail.com | `GCH4YZITWUSTEPSME627YUKK2VA62HETBXTIEUDHB3JNP6XQKTO7E5HZ` | 3 | no feedback provided | `7581ad0ce14e03917a469d2a209ab63a2a4b7ec34f2e388eaaf622284a54edb5` |
+| 24/08/2026 16:09:29 | Debashish Roy | debashish849roy@gmail.com | `GDTZQQAA4CZXQER5JJZ6G27ED2KO3BAVVLXGV6DXQ5TRRQLETWK2B3OR` | 4 | kor bhai chaliye ja | `12dfb3a7352613b343325521f1a7c1851fab1f0fd4b45bd608f6a3478b450d98` |
+| 24/08/2026 16:57:41 | Moushumi De | moushumide72@gmail.com | `GAC57CUX4CVD7D232AM7Y7KV3HICIOSV2MWPIZX7PPXRJSFRFFIQWJQ7` | 5 | good game. | `c396f407190b8475b0564520259add57eed236c300bdf86bc0be0ea30b0b6d35` |
+| 24/08/2026 19:04:14 | Piyush Chauhan | piyush916chauhan@gmail.com | `GATX7NGYRNSO6UZEUCDVG2ZI47MRWDVFR6IFHDP5FF2BKW6B4YP7YJ2H` | 4 | damn good uiux | `f3afa3000d0c29523f1b52767bc9a698e73d4d241a1d727369458f016f8d4da2` |
+| 24/08/2026 21:01:18 | Rituparna Sengupta | rituparnasengupta44@gmail.com | `GB6ISGQXNXADHOKD2I66M2IHNGL4BD3PGXPUCKPAHO3I3WCG2FXMNOHH` | 5 | khub bhalo | `76a534826b93cee61abd7183269dd6644f0a260579b407837f105b96ca225060` |
+| 24/08/2026 22:25:24 | Sabyasachi Das | sabyasachi628das@gmail.com | `GBOIO4D22HJTK73QEUNML6M3KZEYLCHYKOMCWYMSU6DGVQ7EMGXYNNOB` | 4 | darun.. | `d833909dcb9f0fe9bfd521032c4c42850dd7cdb44c97c65df34a2f7f8abefd42` |
+| 25/08/2026 3:10:24 | Mahua Kar | mahuakar135@gmail.com | `GB7UYTT4NCLXZAOWERBEQRL5WDQBGPRWS6BGVT76WTCFDXKX4DC3NTRV` | 3 | Great job; the chess game added a nice touch. | `ae149035cc618642f0a8ed1207c44d31c4ba43ba766d0a1eb17dd1204c033516` |
+| 25/08/2026 11:21:11 | Antara Kundu | antara89kundu@gmail.com | `GC2XD3GIXQ3JQQUQINKAGN3KVPGIMTGRQAAGDAPH7CSHJFKI26SV2QXW` | 4 | nice gameplay | `78c9a7003a5cf13a8e6ea9b1bc8d5428965bf7a83d88a1f1ce40457d1f97eee7` |
+| 25/08/2026 12:39:50 | Kaushik Chatterjee | kaushikchatterjee472@gmail.com | `GAUJNUHI4OOWOH2QTRNWJSQPKCE4Z4PITBEOICNJMOS7RJ3SWKJ5L65K` | 5 | UI and assets are amazing | `7cd25e6bb6d7a40e9de16a0355666556905c92c9e13d8aa64a730711063cc158` |
+| 25/08/2026 15:24:12 | Sharmila Basak | sharmila31basak@gmail.com | `GA6QAJYPDINSZP4JYXQXSBYMHQHP7JEDCZDID3YQV7WD2EKZR2E4XWFM` | 4 | u5t498yr398y3ry3y8y | `38687da143bae31424a9d97f13407419911d4575150f08075e60f05084f8bb25` |
+| 25/08/2026 20:09:13 | Niladri Samanta | niladrisamanta854@gmail.com | `GDH5X3CEFNYTDUURTNSL2X4CUMQZ4KCQ4ITKTEQE5ZLUWW6Q6VDS6GAQ` | 3 | good game. | `bea9f9b53c2d4ed318193e2cdd5141710b24c2793b6004cf718c671701d15ce7` |
+| 25/08/2026 21:17:46 | Suchitra Roy | suchitra93roy@gmail.com | `GBVF6OEOFJHBW3PLGZPAZTIIUDJJXKD7QCYVXXCMYLANRGCZQHUMGBWH` | 4 | decent | `59218926f1cbb8cb15ff96b9a6c9065c4fb1e51ca4074ea7d7803801137120e0` |
+| 25/08/2026 21:24:29 | Koyel Poddar | koyelpoddar716@gmail.com | `GA5MLAMOPY2N2IT2D22HGL3XMJBE2ZX2YEY4ER4IUQLTWNTSF52E5UU5` | 5 | bhalo na.... | `c43364cd7eeb9f430eddbc4eef90541eb83235985f921d2b390ae95f6fd3937e` |
+| 25/08/2026 22:16:50 | akansha dey | akansha43dey@gmail.com | `GAXKN6AZMO5XRRNIUSDNEAXG6HFVMO5OFJ6TQLEI6F6RY6X3CJEMEH7Z` | 4 | dammmm | `d5f1f9d7a56ff7ef0cbc60d8ef4970633c13472cb84580984b96eee8d01bb7c0` |
 
 ## User data spreadsheet
 
@@ -73,6 +124,12 @@ Gameplay is intentionally off-chain: movement, collisions, core spawns, and abil
 ## Feedback form link
 
 [Open the feedback form](https://forms.gle/JogZinMtuEdXZvK7A)
+
+## User iteration feedback
+
+User testing surfaced an important combat issue: in Solo Practice, rival rockets could target and destroy one another instead of consistently engaging the player. This made the arena feel unpredictable and could end the dogfight before the player had a fair chance to participate.
+
+We updated the combat loop so Solo rivals always select the player ship as their hostile target. Projectile collision handling now also ignores rival-to-rival hits in Solo mode, while Duo mode continues to use team-based hostile targeting. These changes keep rockets focused on the player during a Solo run, preserve a consistent challenge, and make combat outcomes easier to understand.
 
 ## Current playable arena
 
