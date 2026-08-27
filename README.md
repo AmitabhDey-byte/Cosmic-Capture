@@ -24,9 +24,11 @@ https://cosmic-capture.vercel.app/
 <img width="1917" height="968" alt="Screenshot 2026-07-27 182906" src="https://github.com/user-attachments/assets/eeda838b-240c-4182-8841-f917db210207" />
 
 <img alt="Stellar command console overview" src="public/readme/admin-panel/admin-overview.png" />
-<img alt="Admin panel pilot records" src="public/readme/admin-panel/admin-pilots-1.png" />
-<img alt="Admin panel pilot records, continued" src="public/readme/admin-panel/admin-pilots-2.png" />
-<img alt="Admin panel transaction records" src="public/readme/admin-panel/admin-transactions.png" />
+<img width="1917" height="866" alt="Screenshot 2026-08-28 014245" src="https://github.com/user-attachments/assets/ad084e49-37a5-4d52-99ae-9819cf37aad7" />
+<img width="1917" height="872" alt="Screenshot 2026-08-28 014119" src="https://github.com/user-attachments/assets/1caa4c38-7319-476a-aea9-f88cb22d8b2c" />
+<img width="1917" height="860" alt="Screenshot 2026-08-28 014055" src="https://github.com/user-attachments/assets/d8b70cec-2039-46f8-95e8-ba968f46a487" />
+<img width="1901" height="866" alt="Screenshot 2026-08-28 013917" src="https://github.com/user-attachments/assets/c840d475-8dfc-4eb1-92e5-5d3be1602cbe" />
+
 
 ## Screenshots of Product
 <img width="1896" height="922" alt="Screenshot 2026-07-27 183126" src="https://github.com/user-attachments/assets/efa17388-07c6-4bc3-8309-5f0e63674d22" />
